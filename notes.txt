@@ -1,0 +1,23 @@
+# Documentation:
+-add steps of Digital Ocean DNS pointing you your correct VPS IP
+
+
+# Things to uninstall after finished main script
+
+# Look at the TODO list
+
+# Errors during script... using rmp???
+warning: /var/tmp/rpm-tmp.H4chsZ: Header V4 RSA/SHA1 Signature, key ID 62e74ca5: NOKEY
+warning: /var/cache/yum/x86_64/7/webtatic/packages/mod_php71w-7.1.22-1.w7.x86_64.rpm: Header V4 RSA/SHA1 Signature, key ID 62e74ca5: NOKEY
+
+# site_permissions file can be re-written to include only the app directory relative filepath.
+# Look at log output of rkhunter scan?
+
+#
+# Things to check on server after deployment
+#
+-can ssh back into -- check
+-cron tabs installed -- check
+-all mysql scripts run successfully (content database working from MySQL cil but not script in VPS_deploy)
+-apache config locked --check
+-apache running --check

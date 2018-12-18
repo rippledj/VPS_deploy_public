@@ -1,0 +1,14 @@
+# Ignore .gitignore files
+
+# Ignore temp files
+tmp/
+
+# Ignore key files
+payloads/id_rsa_github
+payloads/id_rsa_github.pub
+
+# Ignore log file
+log
+
+# Ignore the critical information file
+critical_information.txt
