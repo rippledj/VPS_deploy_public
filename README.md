@@ -173,4 +173,4 @@ In the VPS_deploy.sh script, a SSL/TLS certificate is automatically installed on
 --uir : users browsers are forced to use https for all http content (such as images and links)
 
 Finally, an certificate renewal is added to the cron scheduler.
-# VPS_deploy_public
+
