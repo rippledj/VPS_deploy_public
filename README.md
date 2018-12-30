@@ -17,26 +17,28 @@ VPS Deploy is to quickly deploy a CentOS VPS as a web-server. Steps are listed b
 
 1. Setup a VPS server with SSH access for root
 2. Configure settings for several files in the payloads directory
-3. Encrypt the payload using **VPS_deploy -load -p \<password\>**
-4. Deploy the payload **VPS_deploy -remotedeploy -p \<password\>**
+3. Deploy the payload **VPS_deploy -remotedeploy -p \<password\>**
 
-**WARNING - you need to securely store the critical information output from the -load option used in step 3**
+**WARNING - you need to securely store the critical information output in step 3**
 
 ### What VPS_deploy will do:
 
-1. **VPS_deploy.py -remotedeploy -p \<password\>** will prepare the CentOS package configuration to run VPS_deploy, move the encrypted payload and script to the server.
-*TODO* does grub need to be configured for CentOS??????
-2. The payload will be decrypted and script initiated (All stdout output will be stored to VPS_deploy.log in the root home directory)
+1. Encrypt the payload
+2. **VPS_deploy.py -remotedeploy -p \<password\>** will prepare the VPS server to run VPS_deploy, move the encrypted payload and script to the server and execute the **VPS_deploy.py -deploy -p /<password>/** script.
+*TODO* does grub need to be configured for CentOS???
 3. New non-root users will be created and SSH for remote access will be removed
 4. Firewall will be installed, configured and installed as a service
 5. **LAMP** stack will be installed, configured and installed as service
-6. SELinux will be configured to allow interoperability of the **LAMP** stack
+6. SELinux will be configured to allow SMTP, and PHP write access
 7. **git** will be installed and connection made to GitHub to clone your website to the web-directory
 8. An SSL certificate will be generated from Let's Encrypt Certificate Authority
 9. Additional security packages **rkhunter** and **chkrootkit** will be installed and added to crontab for root
 10. A database backup user will be added and backups will be added to crontab
-11. They payload will be deleted from the server (TODO: memory space will be overwritten)
-13. *Optional* the server will be powered down so you can make an image of it.
+11. Hardened configuration files for Apache, MySQL, and PHP will be copied into their appropriate locations
+12. Permissions will be adjusted for the website files
+13. Any additional MySQL or Bash scripts included in the GitHub repository will be executed
+14. Apache will be started and the Apache configuration file will be encrypted
+15. *Optional* the payload will be re-encrypted or server will be powered down so you can make an image of it.
 
 *NOTE: script can be edited in payloads/VPS_deploy.sh*
 
@@ -44,11 +46,81 @@ VPS Deploy is to quickly deploy a CentOS VPS as a web-server. Steps are listed b
 
 ### Brief File Descriptions:
 
-### Configuration Files Details
+Here are brief overviews of all files required in VPS_deploy.  Configuration files also include commented instructions within the files.  
+
+*Configuration Files*
+
+**serverdata**
+
+**payloads/additional_scripts**
+
+**payloads/config**
+
+**payloads/crons**
+
+**payloads/finish**
+
+**payloads/github_userdata**
+
+**payloads/httpd.conf**
+
+**payloads/jail.local**
+
+**payloads/my.cnf**
+
+**payloads/mysql_scripts**
+
+**payloads/mysql_userdata**
+
+**payloads/php.ini**
+
+**payloads/random_passwords**
+
+**payloads/site_ownership**
+
+**payloads/site_permissions**
+
+**payloads/site_permissions_open**
+
+**payloads/ssh_config**
+
+**payloads/ssh_identity_file**
+
+**payloads/sshd_config**
+
+**payloads/ssh.conf**
+
+**payloads/userdata**
+
+**payloads/V_host.conf**
+
+*Scripts*
+
+**payloads/apache_config_locker.py**
+
+**payloads/VPS_apachectl.sh**
+
+**payloads/VPS_close.sh**
+
+**payloads/VPS_open.sh**
+
+**payloads/VPS_update_git.sh**
+
+*Encryption Keys*
+
+**payloads/id_rsa_github**
+
+**payloads/id_rsa_github.pub**
+
+*Log File*
+
+**payloads/VPS_deploy.log**
+
+### Specific Configuration Details
 
 *Non-root User Details*
 
-**MUST** You must add credentials to the required_files userdata file.  Copy the two lines below and replace the username_default and password with your own username and password.  So, the file is simply two lines of text.  If you want other users added to the server, you can add lines to the file.
+**REQUIRED** You must add credentials to the required_files userdata file.  Copy the two lines below and replace the username_default and password with your own username and password.  So, the file is simply two lines of text.  If you want other users added to the server, you can add lines to the file.
 
 username_default dont_use_this_password
 
