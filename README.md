@@ -1,7 +1,7 @@
 VPS Deploy
 ==========
 
-Copyright (c) 2018 Ripple Software. All rights reserved.
+Copyright (c) 2019 Ripple Software. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
 
@@ -11,7 +11,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 ## Overview Description
 
-VPS Deploy is to quickly deploy a CentOS VPS as a web-server. Steps are listed below and detailed descriptions of each element of VPS_deploy. Security is the focus of VPS_deploy.  Several files must be configured before loading (encrypting a payload) and deploying to a server.
+VPS Deploy is to quickly deploy a CentOS VPS as a web-server. Steps to configure the payload are listed below including detailed descriptions of each element of VPS Deploy. Security is the focus of VPS Deploy.  VPS Deploy can automatically clone a GitHub repository onto the server and run any additional scripts required to initialize your web-application.
 
 ### Things you need to do:
 
@@ -46,7 +46,7 @@ VPS Deploy is to quickly deploy a CentOS VPS as a web-server. Steps are listed b
 
 ### Brief File Descriptions:
 
-Here are brief overviews of all files required in VPS_deploy.  Configuration files also include commented instructions within the files.  
+Here are brief overviews of all files required in VPS Deploy.  Configuration files also include commented instructions within the files.  
 
 *Configuration Files*
 
@@ -58,7 +58,7 @@ Here are brief overviews of all files required in VPS_deploy.  Configuration fil
 
 **payloads/crons** ~ any crons that you want added to the root user on the server.
 
-**payloads/finish** ~ set what will VPS_deploy do after it's finished.
+**payloads/finish** ~ set what will VPS Deploy do after it's finished.
 
 **payloads/github_userdata** ~ username and repository name for the GitHub repository that will be cloned into the web-root directory of the server.
 
@@ -118,13 +118,13 @@ Here are brief overviews of all files required in VPS_deploy.  Configuration fil
 
 *Log File*
 
-**payloads/VPS_deploy.log** ~ main log file for VPS_deploy.
+**payloads/VPS_deploy.log** ~ main log file for VPS Deploy.
 
 ### Specific Configuration Details
 
 *Non-root User Details*
 
-**REQUIRED** You must add credentials to the required_files userdata file.  Copy the two lines below and replace the username_default and password with your own username and password.  So, the file is simply two lines of text.  If you want other users added to the server, you can add lines to the file.
+**REQUIRED** You must add credentials to the userdata file.  Copy the two lines below and replace the username_default and password with your own username and password.  So, the file is simply two lines of text.  If you want other users added to the server, you can add lines to the file.
 
 username_default dont_use_this_password
 
@@ -141,7 +141,7 @@ A modified copy of ssh_config and sshd_config files have been added to required_
 
 *SSH Keys*
 
-New SSH keys will be generated on the VPS for the new user and root SSH keys will be deleted. You will be provided with the server public key after VPS_deploy has finished and you try to connect to the server for the first time.
+New SSH keys will be generated on the VPS for the new user and root SSH keys will be deleted. You will be provided with the server public key after VPS Deploy has finished and you try to connect to the server for the first time.
 
 If you also want to replace the SSH public key that you used when created server, you should create a new RSA public key-pair on your and add the public key named id_rsa.pub to the require_files directory.  If a file named id_rsa.pub is found in the required_files directory and the file is not empty, that file will be placed into the /home/user/.ssh directory of the
 non-root user created during setup.
