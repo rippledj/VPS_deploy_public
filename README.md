@@ -50,71 +50,75 @@ Here are brief overviews of all files required in VPS_deploy.  Configuration fil
 
 *Configuration Files*
 
-**serverdata**
+**serverdata** ~ specify the IP address of the server and the domain name that the server will have.  DNS name-server records must be set to point to that IP address in the configuration where you bought your domain name.
 
-**payloads/additional_scripts**
+**payloads/additional_scripts** ~ any additional scripts that are contained in your GitHub repository or included in the payloads directory that you want to be run during the server setup.
 
-**payloads/config**
+**payloads/config** ~
 
-**payloads/crons**
+**payloads/crons** ~ any crons that you want added to the root user on the server.
 
-**payloads/finish**
+**payloads/finish** ~ set what will VPS_deploy do after it's finished.
 
-**payloads/github_userdata**
+**payloads/github_userdata** ~ username and repository name for the GitHub repository that will be cloned into the web-root directory of the server.
 
-**payloads/httpd.conf**
+**payloads/httpd.conf** ~ config file for Apache that will be copied into place on the server to replace the default one.
 
-**payloads/jail.local**
+**payloads/jail.local** ~ Fail2Ban settings that will be copied into place on the server to replace the default one.
 
-**payloads/my.cnf**
+**payloads/my.cnf** ~ MySQL/MariaDB config file that will be copied into place on the server to replace the default one.
 
-**payloads/mysql_scripts**
+**payloads/mysql_scripts** ~ any additional MySQL scripts that you want to run to setup the web-application or server.  These can be located in the GitHub repository or in the payloads directory.  
 
-**payloads/mysql_userdata**
+**payloads/mysql_userdata** ~ list of usernames and passwords that will be created in MySQL/MariaDB.
 
-**payloads/php.ini**
+**payloads/php.ini** ~ PHP config file that will be copied into place on the server to replace the default one.
 
-**payloads/random_passwords**
+**payloads/random_passwords** ~
 
-**payloads/site_ownership**
+**payloads/site_ownership** ~ any file ownership rules you want to be applied to the server.
 
-**payloads/site_permissions**
+**payloads/site_permissions** ~ any file permission rules you want to be applied to the server.
 
-**payloads/site_permissions_open**
+**payloads/site_permissions_open** ~ the file permissions you want to use when you need to open the web-application for editing files (-opendev flag).
 
-**payloads/ssh_config**
+**payloads/ssh_config** ~ the SSH config file that will be copied into place on the server to replace the default one.
 
-**payloads/ssh_identity_file**
+**payloads/ssh_identity_file** ~
 
-**payloads/sshd_config**
+**payloads/sshd_config** ~ the SSHD config file that will be copied into place on the server to replace the default one.
 
 **payloads/ssh.conf**
 
 **payloads/userdata**
 
-**payloads/V_host.conf**
+**payloads/V_host.conf** ~ the virtual host config file that will be copied into place on the server to replace the default one.  This file will be further altered by Let's Encrypt certbot during the installation of SSL/TLS certificates.
 
 *Scripts*
 
-**payloads/apache_config_locker.py**
+**VPS_deploy.py** ~ the main script used to setup the server.
 
-**payloads/VPS_apachectl.sh**
+**VPS_remote.sh** ~ used for deploying the server remotely.  Initializes the server by installing some required packages, copying the payload onto the sever, and running the main script.  
 
-**payloads/VPS_close.sh**
+**payloads/apache_config_locker.py** ~ used to encrypt/decrypt the Apache configuration file. This allows your Apache config file to contain environment variables that contain sensitive credentials and avoid any clear-text credentials on the server.
 
-**payloads/VPS_open.sh**
+**payloads/VPS_apachectl.sh** ~ used to restart Apache.
 
-**payloads/VPS_update_git.sh**
+**payloads/VPS_close.sh** ~ closes the permissions of the web-application to strict settings for improved security.
+
+**payloads/VPS_open.sh** ~ opens the permissions of the web-application to allow editing of files by a non-root user.
+
+**payloads/VPS_update_git.sh** ~
 
 *Encryption Keys*
 
-**payloads/id_rsa_github**
+**payloads/id_rsa_github** ~ public key used to connect to GitHub account and clone the repository and to update GitHub repo from the VPS server once the package has been cloned.  This allows you to work on the application in a sandbox development environment and then update the live site once the changes have been tested and are ready to be pushed to the live site.
 
-**payloads/id_rsa_github.pub**
+**payloads/id_rsa_github.pub** ~ public key used to connect to GitHub account.  **IMPORTANT** This key must have be added to your GitHub account to enable cloning of your repository.
 
 *Log File*
 
-**payloads/VPS_deploy.log**
+**payloads/VPS_deploy.log** ~ main log file for VPS_deploy.
 
 ### Specific Configuration Details
 
@@ -173,4 +177,3 @@ In the VPS_deploy.sh script, a SSL/TLS certificate is automatically installed on
 --uir : users browsers are forced to use https for all http content (such as images and links)
 
 Finally, an certificate renewal is added to the cron scheduler.
-
