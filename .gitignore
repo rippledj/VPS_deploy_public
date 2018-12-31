@@ -1,3 +1,6 @@
+# Ignore system files
+.DS_Store
+
 # Ignore .gitignore files
 
 # Ignore temp files
@@ -9,6 +12,7 @@ payloads/id_rsa_github.pub
 
 # Ignore log file
 log
+payloads/log
 
 # Ignore the critical information file
 critical_information.txt

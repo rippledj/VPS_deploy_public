@@ -4,3 +4,4 @@
 # then no action is taken
 poweroff 0
 reboot 0
+close 1
