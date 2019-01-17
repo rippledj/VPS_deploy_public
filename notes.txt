@@ -2,6 +2,10 @@
 -add steps of Digital Ocean DNS pointing you your correct VPS IP
 
 # TODO: Improve main script
+-change SSH from port 22 to another port
+-setup swap space on the server
+-check that Grub is install on server and config if needed
+-check out maldetect package possibly install and configure
 -check that the payload on the server is closing properly after deployment
 -add a flag that will modify all the files that can be autoconfigured using the serverdata file
 -add a element to the load script that will double check all parts of the config files to ensure the default values that have been changed

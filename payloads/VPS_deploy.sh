@@ -90,7 +90,6 @@ do
     #echo "[SSH access now only available to non-root user ${user[0]}...]"
   fi
 done < payloads/userdata
-# TODO: Check that Grub is install on server and config if needed
 #
 # Update CentOS and Repositories
 #
@@ -540,6 +539,7 @@ echo "[Payload closed...]"
 # Clear the command line history
 echo "[Removing command line history...]"
 history -c
+> .bash_history
 echo "[Command line history removed...]"
 # Power-off for image of server or reboot system
 while read -r -a finish
