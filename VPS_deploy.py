@@ -473,6 +473,8 @@ if __name__ == '__main__':
         "VPS_opendev_filename" : "VPS_open.sh",
         # Filename of script to close permissions
         "VPS_closedev_filename" : "VPS_close.sh",
+        # Filename of script to close permissions
+        "VPS_closedev_filename" : "VPS_backup_database.sh",
         # Array of files that need to be executable
         "executable_files_array" : [
             "payloads/VPS_deploy.sh",
@@ -481,6 +483,7 @@ if __name__ == '__main__':
             "payloads/VPS_apachectl.sh",
             "payloads/apache_config_locker.py",
             "payloads/VPS_update_git.sh",
+            "payloads/VPS_backup_database.sh"
         ],
         # Array of all possible files in required_files
         "payload_filename_array" : {
@@ -534,6 +537,7 @@ if __name__ == '__main__':
         print ascii_title()
 
         # If the VPS_deploy ready to be sent to the server
+        #
         if args_array['command_args']['command'] == "load":
             # Check if payload is open
             if is_payload_open(args_array):
@@ -543,6 +547,7 @@ if __name__ == '__main__':
                 print "[Payload already loaded for deployment]"
 
         # If the VPS_deploy ready to be sent to the server
+        #
         elif args_array['command_args']['command'] == "open":
             # Check if payload is open
             if is_payload_open(args_array):
@@ -552,6 +557,7 @@ if __name__ == '__main__':
                 open_payload(args_array)
 
         # If the VPS_deploy is on the server and ready to be deployed
+        #
         elif args_array['command_args']['command'] == "deploy":
             # Check if the payload is open
             if is_payload_open(args_array) == False:
@@ -579,6 +585,7 @@ if __name__ == '__main__':
                 args_array = load_payload(args_array)
 
         # If VPS_deploy is on the client and ready to be deployed
+        #
         elif args_array['command_args']['command'] == "remotedeploy":
 
             # Check if payload is open
@@ -604,6 +611,7 @@ if __name__ == '__main__':
                 open_payload(args_array)
 
         # If the command update then run script to update the GitHub repository
+        #
         elif args_array['command_args']['command'] == "update":
             # Open the payload again
             if is_payload_open(args_array) == False:
@@ -617,6 +625,7 @@ if __name__ == '__main__':
                 print "[Could not locate the script to update GitHub repository...]"
 
         # If the command opendev then run script to change permissions
+        #
         elif args_array['command_args']['command'] == "opendev":
             # Check for the location of the script and run it
             if os.path.isfile("payloads/" + args_array['VPS_opendev_filename']):
@@ -627,6 +636,7 @@ if __name__ == '__main__':
                 print "[Could not locate the script to open web-directory permissions...]"
 
         # If the command opendev then run script to change permissions
+        #
         elif args_array['command_args']['command'] == "closedev":
             # Check for the location of the script and run it
             if os.path.isfile("payloads/" + args_array['VPS_closedev_filename']):
@@ -635,3 +645,14 @@ if __name__ == '__main__':
                 subprocess.call("./" + args_array['VPS_closedev_filename'], shell=True)
             else:
                 print "[Could not locate the script to close web-directory permissions...]"
+
+        # If the command backup then run script to send backup to remote server
+        #
+        elif args_array['command_args']['command'] == "backup":
+            # Check for the location of the script and run it
+            if os.path.isfile("payloads/" + args_array['VPS_backup_filename']):
+                subprocess.call("payloads/" + args_array['VPS_backup_filename'], shell=True)
+            elif os.path.isfile(args_array['VPS_backup_filename']):
+                subprocess.call("./" + args_array['VPS_backup_filename'], shell=True)
+            else:
+                print "[Could not locate the script to send the backup to remote server...]"

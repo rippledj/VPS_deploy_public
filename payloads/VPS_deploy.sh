@@ -8,9 +8,9 @@ yum install -y ntpdate
 # Check that ntpd is running
 chkconfig ntpd on
 # Set ntpd as a service
-systemctl enable ntpd
 # Sync the time to pool.ntp.org
 ntpdate pool.ntp.org
+systemctl enable ntpd
 # Start the ntpd daemon
 systemctl start ntpd
 # Set the hardware clock to server clock
