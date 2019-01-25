@@ -3,5 +3,9 @@
 # -remotedeploy option as well as for SSL certificate registration.
 # The domain name should ONLY be the base domain (without wwww.)
 # Sample:
-# IP 12.34.45.78
+# IP 123.456.78.9
 # DomainName yoursite.com
+#EmailAddress your@emailaddress.com
+#RemoteBackupIP 123.456.78.9
+#GitHubUser github_username
+#GitHubRepo github_reponame

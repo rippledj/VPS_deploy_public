@@ -1,3 +1,13 @@
+#!/bin/bash
+#
+#
+# VPS_open.sh
+# Opens the payload
+# Ripple Software Consulting
+# GitHub: https://github.com/rippledj/VPS_deploy
+# Author: Joseph Lee
+# Email: joseph@ripplesoftware.ca
+#
 # Load a list of directories that will require special permissions
 echo "[Opening permisssions for development access...]"
 while read -r -a dirperm

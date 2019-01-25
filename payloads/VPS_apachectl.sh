@@ -1,3 +1,13 @@
+#!/bin/bash
+#
+#
+# VPS_apachectl.sh
+# Restarts Apache
+# Ripple Software Consulting
+# GitHub: https://github.com/rippledj/VPS_deploy
+# Author: Joseph Lee
+# Email: joseph@ripplesoftware.ca
+#
 # Apachectl Script accepts the command then starts or restarts apache
 if [ $1 = "restart" ]; then
   # Restart Apache

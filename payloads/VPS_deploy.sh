@@ -1,5 +1,14 @@
 #!/bin/bash
 #
+#
+# VPS_deploy.sh
+# Main deploy script
+# Ripple Software Consulting
+# GitHub: https://github.com/rippledj/VPS_deploy
+# Author: Joseph Lee
+# Email: joseph@ripplesoftware.ca
+#
+#
 # Set the timezone and configure time
 #
 # Install the NTP date
@@ -110,18 +119,14 @@ yum install -y httpd
 echo "[Apache installed...]"
 # Install PHP
 # Step 1: Install Webstatic repositories
-echo "[Adding Webstatic repositories...]"
-# TODO: Do I need the fedora repository??
-#rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-#yum-config-manager --add-repo https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+echo "[Installing PHP...]"
+#
+# Install PHP 7.1 and necessary extensions
+#
 rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-#yum-config-manager --add-repo https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-# Step 2: Install PHP 7.1 and necessary extensions
 yum install -y mod_php71w php71w-cli php71w-common php71w-gd php71w-mbstring php71w-mcrypt php71w-mysqlnd php71w-xml
 echo "[PHP installed...]"
 # Install MySQL / MariaDB
-# NOTE: Check that differences between MySQL and MariaDB
-# Method 1: MySQL / MariaDB from default repository
 echo "[Installing MySQL/MariaDB...]"
 yum install -y mariadb-server
 # Replace MySQL/MariaDB my.conf file with payload/my.cnf
@@ -133,16 +138,6 @@ systemctl start mariadb
 systemctl enable mariadb
 systemctl status mariadb
 echo "[MySQL/MariaDB installed, started and added to system services...]"
-# Method 2: Installed from newest packages available online
-#wget -N https://dev.mysql.com/get/mysql-community-server-8.0.12-1.el7.x86_64.rpm
-#rpm -ivh mysql-community-server-8.0.12-1.el7.x86_64.rpm
-#yum update
-#yum localinstall -y mysql-community-release-el7-5.noarch.rpm
-#systemctl start mysqld
-#systemctl enable mysqld
-#echo "[MySQL installed from rpm and started...]"
-# Perform tasks performed by mysql_secure_installation
-# If there is anything in the mysql_userdata file then add mysql root password and backup user
 #
 # Modify Configuration of LAMP Web-stack
 #
@@ -450,7 +445,6 @@ echo "[Finished adding crontabs to schedule...]"
 #
 # SSHD Conifiguration
 #
-# TODO: figure out the best config for sshd_config that works
 # Move the sshd config file onto the server
 echo "[Moving new sshd_config to server...]"
 /bin/cp payloads/sshd_config /etc/ssh/sshd_config

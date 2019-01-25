@@ -1,3 +1,13 @@
+#!/bin/bash
+#
+#
+# VPS_close.sh
+# Closes the payload
+# Ripple Software Consulting
+# GitHub: https://github.com/rippledj/VPS_deploy
+# Author: Joseph Lee
+# Email: joseph@ripplesoftware.ca
+#
 # Load a list of directories that will require special permissions
 echo "[Closing permisssions for web-root...]"
 while read -r -a dirperm

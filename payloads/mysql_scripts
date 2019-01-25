@@ -2,4 +2,4 @@
 # all MySQL scripts should be relative from GitHub repository path
 # Create all users
 # Example:
-#assets/installation/create_users_MariaDB.sql
+#extra_files/installation/create_users_MariaDB.sql

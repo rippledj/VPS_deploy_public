@@ -1,5 +1,0 @@
-# This file should include the username and IP address of the server that the
-# datbase backups will be copied onto via SSH.  This is used when the
-# -backup flag is called from VPS_deploy.py
-# Sample:
-# backup@12.34.45.78
