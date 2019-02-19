@@ -1120,7 +1120,7 @@ if __name__ == '__main__':
 
             print "[Closing payload...]"
             # Close the payload
-            close_payload(args_array)
+            load_payload(args_array)
 
         # If the command opendev then run script to change permissions
         elif args_array['command_args']['command'] == "opendev":
@@ -1156,7 +1156,7 @@ if __name__ == '__main__':
 
             print "[Closing payload...]"
             # Close the payload
-            close_payload(args_array)
+            load_payload(args_array)
 
         # If the command opendev then run script to change permissions
         elif args_array['command_args']['command'] == "migrate":
