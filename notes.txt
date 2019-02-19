@@ -10,6 +10,7 @@
 -add a flag that will modify all the files that can be autoconfigured using the serverdata file
 -add a element to the load script that will double check all parts of the config files to ensure the default values that have been changed
 -add an auto generation of passwords for root, user, and mysql users.
+-remove migration from the script (only for WordPress version)
 
 # Look at the script TODO lists
 
@@ -22,7 +23,9 @@ warning: /var/cache/yum/x86_64/7/webtatic/packages/mod_php71w-7.1.22-1.w7.x86_64
 #
 -can ssh back into -- check
 -SSL/TLS certificate working -- check
+-SSL certificate in crons for update -- ??
 -cron tabs installed -- check
 -all mysql scripts run successfully (content database working from MySQL cli but not script in VPS_deploy)
 -apache config locked --check
 -apache running --check
+-swap space ??
