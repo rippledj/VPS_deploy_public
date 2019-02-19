@@ -67,7 +67,7 @@ def get_server_data_from_file(cwd):
                 print "Remote server IP " + server_data['remote_backup_IP']
     # Check to see the serverdata has been modified
     if "IP" not in server_data or "site_URI" not in server_data or "admin_email" not in server_data:
-        print "[You did add your server config to the serverdata file...]"
+        print "[You did not add your server config to the serverdata file...]"
         exit()
 
     # Set a false flag if there is no remote server IP
