@@ -428,7 +428,7 @@ yum install -y MySQL-python
 yum install -y mysql-devel
 pip install psycopg2
 pip install psycopg2-binary
-echo "[Installing required python packages...]"
+echo "[Finished installing required python packages...]"
 #
 # Install Crontab Schedule Jobs
 #
