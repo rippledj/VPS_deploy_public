@@ -445,9 +445,9 @@ if [ -s payloads/mysql_userdata ]; then
   while read -r -a mysqlpass
   do
     if [ ${mysqlpass[0]} = "backup" ]; then
-      mkdir /var/www/backups
-      chmod o+w /var/www/backups
-      crontab -l | { cat; echo "10 0 * * 0 mysqldump --single-transaction -u backup -p${mysqlpass[1]} --all-databases | gzip > /var/www/backups/db_backup_\$(date +\%m_\%d_\%Y).sql.gz"; } | crontab -
+      mkdir -p /var/www/<github_reponame>/backups/database
+      chmod o+w /var/www/<github_reponame>/backups/database
+      crontab -l | { cat; echo "10 0 * * 0 mysqldump --single-transaction -u backup -p${mysqlpass[1]} --all-databases | gzip > /var/www/<github_reponame>/backups/database/db_backup_\$(date +\%m_\%d_\%Y).sql.gz"; } | crontab -
     fi
   done < payloads/mysql_userdata
 fi
