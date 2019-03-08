@@ -99,7 +99,6 @@ def build_command_arguments(argument_array, args_array):
 		command_arg = {}
 		# If the help menu is requested
 		if "-h" in argument_array or "-help" in argument_array:
-			print "here"
 			command_arg.update({"command" : "h"})
 			return command_arg
 		# Check that the argument array is proper length (4)
