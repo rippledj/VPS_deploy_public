@@ -2,6 +2,7 @@
 -add steps of Digital Ocean DNS pointing you your correct VPS IP
 
 # TODO: Improve main script
+-during the first init, generate random passwords for use
 -change SSH from port 22 to another port
 -setup swap space on the server
 -check that Grub is install on server and config if needed

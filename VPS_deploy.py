@@ -53,15 +53,25 @@ def get_server_data_from_file(cwd):
         serverdata_array = serverdata_file.readlines()
     for line in serverdata_array:
         if line.strip()[0] is not "#":
+            # Collect the IP from config file
             if line.split()[0] == "IP":
                 server_data.update({'IP' : line.split()[1].strip()})
                 print "Server IP: " + server_data['IP']
+            # Collect the domain name from config file
             if line.split()[0] == "DomainName":
                 server_data.update({'site_URI' : line.split()[1].strip()})
                 print "Domain name: " + server_data['site_URI']
+            # Collect the email address from config file
             if line.split()[0] == "EmailAddress":
                 server_data.update({'admin_email' : line.split()[1].strip()})
                 print "Admin email: " + server_data['admin_email']
+            # Collect the root password from config file
+            if line.split()[0] == "RootPassWord":
+                server_data.update({'root_password' : line.split()[1].strip()})
+                print "Root password: " + server_data['root_password']
+            if line.split()[0] == "NonRootPassword":
+                server_data.update({'non_root_password' : line.split()[1].strip()})
+                print "Non-root password: " + server_data['non_root_password']
             if line.split()[0] == "RemoteBackupIP":
                 server_data.update({'remote_backup_IP' : line.split()[1].strip()})
                 print "Remote server IP " + server_data['remote_backup_IP']
@@ -551,14 +561,17 @@ def initialize_payload(args_array):
         args_array['remote_backup_IP'] = args_array['default_remote_backup_IP']
 
     # If the site has not been initialized yet
-    if len(init_as_contents) == 1 and init_as_contents[0].strip() == "default":
+    if len(init_as_contents) == 0 or init_as_contents[0].strip() == "":
         print "[Deafult configuration detected...]"
-        # Set the current site IP to be replaced as the default
+        # Set the site config details to be replaced as the default
         args_array['current_site_IP'] = args_array['default_site_IP']
         args_array['current_site_URI'] = args_array['default_site_URI']
         args_array['current_admin_email'] = args_array['default_admin_email']
         args_array['current_remote_backup_IP'] = args_array['default_remote_backup_IP']
-        # Set the current GitHub username and repo name to be replaced from the file
+        # Set the current userdata to be replaced as the default
+        args_array['current_root_password'] = args_array['default_root_password']
+        args_array['current_non_root_password'] = args_array['default_non_root_password']
+        # Set the GitHub username and repo name to be replaced as the default
         args_array['current_github_username'] = args_array['default_github_username']
         args_array['current_github_reponame'] = args_array['default_github_reponame']
     # Check if payload is still default or has been changed
@@ -569,9 +582,12 @@ def initialize_payload(args_array):
         args_array['current_site_URI'] = init_as_contents[1].strip()
         args_array['current_admin_email'] = init_as_contents[2].strip()
         args_array['current_remote_backup_IP'] = args_array['remote_backup_IP']
+        # Set the current userdata to be replaced as the default
+        args_array['current_root_password'] = init_as_contents[3].strip()
+        args_array['current_non_root_password'] = init_as_contents[4].strip()
         # Set the current GitHub username and repo name to be replaced from the file
-        args_array['current_github_username'] = init_as_contents[3].strip()
-        args_array['current_github_reponame'] = init_as_contents[4].strip()
+        args_array['current_github_username'] = init_as_contents[5].strip()
+        args_array['current_github_reponame'] = init_as_contents[6].strip()
 
 
     # Write the new serverdata configuration of payload into .init_as
@@ -580,6 +596,8 @@ def initialize_payload(args_array):
         init_as.write(args_array['site_IP'] + "\n")
         init_as.write(args_array['site_URI'] + "\n")
         init_as.write(args_array['admin_email'] + "\n")
+        init_as.write(args_array['root_password'] + "\n")
+        init_as.write(args_array['non_root_password'] + "\n")
         init_as.write(args_array['github_username'] + "\n")
         init_as.write(args_array['github_reponame'] + "\n")
         print "[Finished storing new configuration settings...]"
@@ -604,8 +622,12 @@ def initialize_payload(args_array):
     if args_array['current_remote_backup_IP'] != args_array['remote_backup_IP']:
         print "- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP']
         logger.info("- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP'])
+    # Log and Stdout the userdata changes to be made
+    if args_array['current_root_password'] != args_array['root_password'] or args_array['current_non_root_password'] != args_array['non_root_password']:
+        print "- Initializing the payload userdata"
+        logger.info("- Initializing the payload userdata")
     # Log and Stdout the GitHub changes to be made
-    if args_array['current_github_username'] != args_array['current_github_username'] or args_array['current_github_reponame'] != args_array['current_github_reponame']:
+    if args_array['current_github_username'] != args_array['github_username'] or args_array['current_github_reponame'] != args_array['github_reponame']:
         print "- Initializing the payload GitHub repo from " + args_array['current_github_username'] + ":" + args_array['current_github_reponame'] + " to " + args_array['github_username'] + ":" + args_array['github_reponame']
         logger.info("- Initializing the payload GitHub repo from " + args_array['current_github_username'] + ":" + args_array['current_github_reponame'] + " to " + args_array['github_username'] + ":" + args_array['github_reponame'])
 
@@ -948,6 +970,16 @@ if __name__ == '__main__':
         "default_github_username" : "<github_username>",
         # Default github repo username in the vanilla version of the package
         "default_github_reponame" : "<github_reponame>",
+        # Default non-root username in the vanilla version of the package
+        "default_non_root_username" : "<default_non_root_username>",
+        # Default root password in the vanilla version of the package
+        "default_root_password" : "<change_root_password>",
+        # Default non-root user password in the vanilla version of the package
+        "default_non_root_password" : "<change_non_root_password>",
+        # Default MySQL root password in the vanilla version of the package
+        "default_mysql_root_password" : "<default_mysql_root_password>",
+        # Default MySQL backup password in the vanilla version of the package
+        "default_mysql_backup_password" : "<default_mysql_backup_password>",
         # Allowed command line args
 		"allowed_args_array" : ["-load", "-remotedeploy", "-deploy", "-open", "-p", "-opendev", "-closedev", "-purge", "-update", "-migrate", "-backup"],
         # Command args that are not allowed with purge
@@ -981,7 +1013,9 @@ if __name__ == '__main__':
                 cwd + "/payloads/httpd.conf",
                 cwd + "/payloads/V_host.conf",
                 cwd + "/payloads/remote_serverdata",
-
+                cwd + "/payloads/VPS_deploy.sh",
+                cwd + "/payloads/VPS_remote_backup.sh",
+                cwd + "/payloads/userdata"
             ],
             # Files that have GitHub data to be replaced
             "github_data" : [
@@ -997,6 +1031,10 @@ if __name__ == '__main__':
             "remote_serverdata" : [
                 cwd + "/payloads/remote_serverdata",
                 cwd + "/payloads/ssh_identity_file"
+            ],
+            # Files that have MySQL data to be replaced
+            "mysql_data" : [
+                cwd + "/payloads/mysql_userdata"
             ]
         },
         # Files to check during a migrate

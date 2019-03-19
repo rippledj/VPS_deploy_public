@@ -1,0 +1,5 @@
+# This file tells the VPS_remote_backup.sh script
+# which folders and or files are pushed to the
+# remote backup server.  The folders are checked for
+# for changes in terms of added
+# server once the script is finished.

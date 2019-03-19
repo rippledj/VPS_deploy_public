@@ -13,6 +13,7 @@ import smtplib
 import random
 import string
 import random
+
 ## Take the cleartext password file and output encrypted payload
 def output_payload(args_array):
 	try:
@@ -67,6 +68,8 @@ def output_payload(args_array):
 		# Log error with creating filepath
 		logger.error('Failed to build command arguments: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
 		return False
+
+
 ## Parses the command argument sys.arg into command set, also encrypt password for use
 def build_command_arguments(args, args_array):
 	## Include logger in the main function
@@ -115,6 +118,8 @@ def build_command_arguments(args, args_array):
 		# Log error with creating filepath
 		logger.error('Failed to build command arguments: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
 		return False
+
+
 # Encrypt the configuration file
 def input_payload(args_array):
 	# Use the config_path_and_filename to find the file and store in enncrypted_path_and_filename
@@ -148,6 +153,8 @@ def input_payload(args_array):
 		# Log error with creating checksum map
 		logger.error('Error writing encrypted payload to file: ' + str(e) + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
 		return False
+
+
 # Used to generate a passphrase file
 def generate_passwords_file(args_array):
 	# Open passphrase file to write
@@ -159,6 +166,8 @@ def generate_passwords_file(args_array):
 		passphrase_file.write(passphrase + "\n")
 	passphrase_file.close()
 	print "Passphrase file created..."
+
+
 # Setup logging
 def setup_logger(args_array):
     logger = logging.getLogger(args_array['app_name'])
@@ -166,6 +175,8 @@ def setup_logger(args_array):
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
+
+
 ## Main Function Starts Here ##
 if __name__ == '__main__':
 	## Declare required variables for filepath and config filename
