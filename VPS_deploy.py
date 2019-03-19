@@ -54,17 +54,27 @@ def get_server_data_from_file(cwd):
     for line in serverdata_array:
         if line.strip()[0] is not "#":
             if line.split()[0] == "IP":
-                server_data.update({'IP' : line.split()[1]})
+                server_data.update({'IP' : line.split()[1].strip()})
                 print "Server IP: " + server_data['IP']
             if line.split()[0] == "DomainName":
-                server_data.update({'site_URI' : line.split()[1]})
+                server_data.update({'site_URI' : line.split()[1].strip()})
                 print "Domain name: " + server_data['site_URI']
             if line.split()[0] == "EmailAddress":
-                server_data.update({'admin_email' : line.split()[1]})
+                server_data.update({'admin_email' : line.split()[1].strip()})
                 print "Admin email: " + server_data['admin_email']
             if line.split()[0] == "RemoteBackupIP":
-                server_data.update({'remote_backup_IP' : line.split()[1]})
+                server_data.update({'remote_backup_IP' : line.split()[1].strip()})
                 print "Remote server IP " + server_data['remote_backup_IP']
+            if line.split()[0] == "PHPVersion":
+                server_data.update({'PHP_version' : line.split()[1].strip()})
+                print "PHP version " + server_data['PHP_version']
+            if line.split()[0] == "DBApplication":
+                server_data.update({'DB_app' : line.split()[1].strip()})
+                print "Database Application " + server_data['DB_app']
+            if line.split()[0] == "AdditionalApplication":
+                server_data['additional_app_array'] = []
+                server_data.append('additional_app_array', line.split()[1].strip())
+                print "Additional Application " + server_data['DB_app']
     # Check to see the serverdata has been modified
     if "IP" not in server_data or "site_URI" not in server_data or "admin_email" not in server_data:
         print "[You did not add your server config to the serverdata file...]"
@@ -105,6 +115,20 @@ def get_github_data_from_file(payload_dirpath):
     # Return the dictionary with serverdata
     return github_data
 
+# Collect any critical information required from the payload files
+def collect_payload_critical_information(args_array):
+
+    ## Include logger in the main function
+    logger = logging.getLogger(args_array['app_name'])
+
+    # Open the userdata file and read into array
+    userdata_file = open("payloads/userdata", "r")
+    userdata_contents_array = userdata_file.readlines()
+    for line in userdata_contents_array:
+        line = line.split().strip()
+        if line[0] != "root":
+            return line[0]
+
 # Loads the payload and returns args_array
 def load_payload(args_array):
 
@@ -125,12 +149,16 @@ def store_critical_information(args_array):
     ## Include logger in the main function
     logger = logging.getLogger(args_array['app_name'])
 
+    # Get the non-root username to add to the critical information file
+    non_root_username = collect_payload_critical_information(args_array)
+
     # Create a string to hold all the critical data
     critical_information_string = ""
 
     # Append to critical information string
     critical_information_string += "\n\nIMPORTANT: The payload will be erased after is is deployed so save the following information in a safe place."
     critical_information_string += "\n\nVPS_deploy payload password: " + args_array['command_args']['raw_password']
+    critical_information_string += "\nSSH command: ssh " + non_root_username + '@' + args_array['site_IP']
     critical_information_string += "\n\nOption A:"
     critical_information_string += "\n1. Copy (scp) payload.zip and VP_deplpy.py to your server"
     critical_information_string += "\n2. SSH into your VPS"
@@ -701,7 +729,7 @@ def initialize_single_file(key, args_array, filename):
 def prepare_args_array(args_array):
 
     # Collect the serverdata from config file
-    server_data = get_server_data_from_file(cwd)
+    server_data = get_server_data_from_file(args_array['cwd'])
     # Update the relevant entries in args_array
     # URI of the web-application to be deployed on the VPS
     args_array.update({"site_URI" : server_data['site_URI']})
@@ -711,8 +739,11 @@ def prepare_args_array(args_array):
     args_array.update({"admin_email" : server_data['admin_email']})
     # Remote backup server IP
     args_array.update({"remote_backup_IP" : server_data['remote_backup_IP']})
+    # Update the version of PHP to be installed
+    args_array.update({"PHP_version" : server_data['PHP_version']})
     # Update the name of the sites_enabled file for Apache based on site_URI
     args_array["payload_filename_array"]["v_host_site_file"]["destination_path"] = "/etc/sites_enabled/" + server_data['site_URI'] + ".conf"
+
 
     # Github data is only available if payload is closed
     if is_payload_open(args_array):
@@ -1159,7 +1190,7 @@ if __name__ == '__main__':
             # Close the payload
             load_payload(args_array)
 
-        # If the command opendev then run script to change permissions
+        # If the command migrate then run script to modify the database files
         elif args_array['command_args']['command'] == "migrate":
             # Open the payload again
             if is_payload_open(args_array) == False:
