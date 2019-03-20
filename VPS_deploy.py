@@ -69,18 +69,35 @@ def get_server_data_from_file(cwd):
             if line.split()[0] == "RootPassWord":
                 server_data.update({'root_password' : line.split()[1].strip()})
                 print "Root password: " + server_data['root_password']
+            # Collect the non root password from config file
             if line.split()[0] == "NonRootPassword":
                 server_data.update({'non_root_password' : line.split()[1].strip()})
                 print "Non-root password: " + server_data['non_root_password']
+            # Collect the non root username from config file
+            if line.split()[0] == "NonRootUsername":
+                server_data.update({'non_root_username' : line.split()[1].strip()})
+                print "Non-root username: " + server_data['non_root_username']
+            # Collect the non remote backup IP from config file
             if line.split()[0] == "RemoteBackupIP":
                 server_data.update({'remote_backup_IP' : line.split()[1].strip()})
                 print "Remote server IP " + server_data['remote_backup_IP']
+            # Collect the MySQL root password from config file
+            if line.split()[0] == "MySQLRootPassword":
+                server_data.update({'mysql_root_password' : line.split()[1].strip()})
+                print "MySQL root password " + server_data['mysql_root_password']
+            # Collect the MySQL backup password from config file
+            if line.split()[0] == "MySQLBackupPassword":
+                server_data.update({'mysql_backup_password' : line.split()[1].strip()})
+                print "MySQL root password " + server_data['mysql_backup_password']
+            # Collect the PHP Version from config file
             if line.split()[0] == "PHPVersion":
                 server_data.update({'PHP_version' : line.split()[1].strip()})
                 print "PHP version " + server_data['PHP_version']
+            # Collect the DB Application from config file
             if line.split()[0] == "DBApplication":
                 server_data.update({'DB_app' : line.split()[1].strip()})
                 print "Database Application " + server_data['DB_app']
+            # Collect the Additional applications from config file
             if line.split()[0] == "AdditionalApplication":
                 server_data['additional_app_array'] = []
                 server_data.append('additional_app_array', line.split()[1].strip())
@@ -99,8 +116,8 @@ def get_server_data_from_file(cwd):
     # Return the dictionary with serverdata
     return server_data
 
-# Get the github data from file
-def get_github_data_from_file(payload_dirpath):
+# Get the github data from serverdata file
+def get_github_data_from_file():
 
     # Create an array to hold the serverdata
     github_data = {}
@@ -124,6 +141,42 @@ def get_github_data_from_file(payload_dirpath):
     print "[Server data has been parsed to get the GitHub data...]"
     # Return the dictionary with serverdata
     return github_data
+
+# Prepares the arguments array for loading a payload or migrating a payload
+def prepare_args_array(args_array):
+
+    # Collect the serverdata from config file
+    server_data = get_server_data_from_file(args_array['cwd'])
+    # Update the relevant entries in args_array
+    # URI of the web-application to be deployed on the VPS
+    args_array.update({"site_URI" : server_data['site_URI']})
+    # IP of the server to host the site
+    args_array.update({"site_IP" : server_data['IP']})
+    # Admin email of the server to host the site
+    args_array.update({"admin_email" : server_data['admin_email']})
+    # Root password to be set on the server
+    args_array.update({"root_password" : server_data['root_password']})
+    # Non root password to be set on the server
+    args_array.update({"non_root_password" : server_data['non_root_password']})
+    # Non root username to be set on the server
+    args_array.update({"non_root_username" : server_data['non_root_username']})
+    # Remote backup server IP
+    args_array.update({"remote_backup_IP" : server_data['remote_backup_IP']})
+    # Update the version of PHP to be installed
+    args_array.update({"PHP_version" : server_data['PHP_version']})
+    # Update the name of the sites_enabled file for Apache based on site_URI
+    args_array["payload_filename_array"]["v_host_site_file"]["destination_path"] = "/etc/sites_enabled/" + server_data['site_URI'] + ".conf"
+
+    # Collect the GitHub data from serverdata config file
+    github_data = get_github_data_from_file()
+    # Default location of the local WordPress site files
+    default_local_site_dirpath = cwd + "/var/www/html/" + github_data['github_reponame'] + "/",
+    # GitHub username and repo name
+    args_array.update({"github_username" : github_data['github_username']})
+    args_array.update({"github_reponame" : github_data['github_reponame']})
+
+    # Return the updated args array
+    return args_array
 
 # Collect any critical information required from the payload files
 def collect_payload_critical_information(args_array):
@@ -194,7 +247,7 @@ def store_critical_information(args_array):
             else:
                 # Print the header
                 critical_information_string += "\n" + critical_item['header'] + ": \n"
-                #
+                # Append onto the output string
                 for line in file_array:
                     if line.strip()[:0] != "#":
                         critical_information_string += line
@@ -556,10 +609,6 @@ def initialize_payload(args_array):
     with open(args_array['payload_init_filename'], "r") as init_as:
         init_as_contents = init_as.readlines()
 
-    # If no remote backup IP has been included then set to default value
-    if args_array['remote_backup_IP'] == False:
-        args_array['remote_backup_IP'] = args_array['default_remote_backup_IP']
-
     # If the site has not been initialized yet
     if len(init_as_contents) == 0 or init_as_contents[0].strip() == "":
         print "[Deafult configuration detected...]"
@@ -567,47 +616,60 @@ def initialize_payload(args_array):
         args_array['current_site_IP'] = args_array['default_site_IP']
         args_array['current_site_URI'] = args_array['default_site_URI']
         args_array['current_admin_email'] = args_array['default_admin_email']
-        args_array['current_remote_backup_IP'] = args_array['default_remote_backup_IP']
         # Set the current userdata to be replaced as the default
         args_array['current_root_password'] = args_array['default_root_password']
         args_array['current_non_root_password'] = args_array['default_non_root_password']
+        args_array['current_non_root_username'] = args_array['default_non_root_username']
+        # Set the current userdata to be replaced as the default
+        args_array['current_mysql_root_password'] = args_array['default_mysql_root_password']
+        args_array['current_mysql_backup_password'] = args_array['default_mysql_backup_password']
         # Set the GitHub username and repo name to be replaced as the default
         args_array['current_github_username'] = args_array['default_github_username']
         args_array['current_github_reponame'] = args_array['default_github_reponame']
+
     # Check if payload is still default or has been changed
     else:
         print "[Existing configuration detected...]"
-        # Set the current site IP and URI to be replaced from the file
-        args_array['current_site_IP'] = init_as_contents[0].strip()
-        args_array['current_site_URI'] = init_as_contents[1].strip()
-        args_array['current_admin_email'] = init_as_contents[2].strip()
-        args_array['current_remote_backup_IP'] = args_array['remote_backup_IP']
-        # Set the current userdata to be replaced as the default
-        args_array['current_root_password'] = init_as_contents[3].strip()
-        args_array['current_non_root_password'] = init_as_contents[4].strip()
-        # Set the current GitHub username and repo name to be replaced from the file
-        args_array['current_github_username'] = init_as_contents[5].strip()
-        args_array['current_github_reponame'] = init_as_contents[6].strip()
+        for item in init_as_contents:
+            # Set the current site IP and URI to be replaced from the file
+            if item.split()[0] == "IP":
+                args_array['current_site_IP'] = item.split()[1].strip()
+            if item.split()[0] == "DomainName":
+                args_array['current_site_URI'] = item.split()[1].strip()
+            if item.split()[0] == "EmailAddress":
+                args_array['current_admin_email'] = item.split()[1].strip()
+            # Set the current userdata to be replaced as the default
+            if item.split()[0] == "NonRootUsername":
+                args_array['current_non_root_username'] = item.split()[1].strip()
+            if item.split()[0] == "RootPassword":
+                args_array['current_root_password'] = item.split()[1].strip()
+            if item.split()[0] == "NonRootPassword":
+                args_array['current_non_root_password'] = item.split()[1].strip()
+            # Set the current MySQL data to be replaced as the default
+            if item.split()[0] == "MySQLRootPassword":
+                args_array['current_mysql_root_password'] = item.split()[1].strip()
+            if item.split()[0] == "MySQLBackupPassword":
+                args_array['current_mysql_backup_password'] = item.split()[1].strip()
+            # Set the current GitHub username and repo name to be replaced from the file
+            if item.split()[0] == "GitHubUser":
+                args_array['current_github_username'] = item.split()[1].strip()
+            if item.split()[0] == "GitHubRepo":
+                args_array['current_github_reponame'] = item.split()[1].strip()
 
-
-    # Write the new serverdata configuration of payload into .init_as
-    with open(args_array['payload_init_filename'], "w") as init_as:
-        print "[Storing new configuration settings...]"
-        init_as.write(args_array['site_IP'] + "\n")
-        init_as.write(args_array['site_URI'] + "\n")
-        init_as.write(args_array['admin_email'] + "\n")
-        init_as.write(args_array['root_password'] + "\n")
-        init_as.write(args_array['non_root_password'] + "\n")
-        init_as.write(args_array['github_username'] + "\n")
-        init_as.write(args_array['github_reponame'] + "\n")
-        print "[Finished storing new configuration settings...]"
-
+    # If no remote backup IP has been included in the serverdata file
+    # then check the remote_serverdata file and if it is not still set as
+    # the default value then set to current value
+    if args_array['remote_backup_IP'] == False:
+        # Open the remote_serverdata file and overwrite with default
+        with open(args_array['payload_remote_serverdata_filename'], "w") as remote_serverdata:
+            remote_serverdata.write(args_array['default_remote_backup_IP'])
     # If the remote server has been specified in the serverdata file
     # replace it into the remote_serverdata file
-    if "remote_backup_IP" in args_array:
-        # Write the new serverdata configuration of payload into .init_as
-        with open(args_array['payload_remote_serverdata_filename'], "w") as remote_serverdata:
-            remote_serverdata.write(args_array['remote_backup_IP'])
+    else:
+        # Open the remote_serverdata file and read the current value
+        with open(args_array['payload_remote_serverdata_filename'], "r") as remote_serverdata:
+            remote_serverdata_contents = remote_serverdata.readlines()
+            args_array['current_remote_backup_IP'] = remote_serverdata_contents[0]
 
     # Log and Stdout the server data changes to be made
     if args_array['current_site_IP'] != args_array['site_IP']:
@@ -623,7 +685,7 @@ def initialize_payload(args_array):
         print "- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP']
         logger.info("- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP'])
     # Log and Stdout the userdata changes to be made
-    if args_array['current_root_password'] != args_array['root_password'] or args_array['current_non_root_password'] != args_array['non_root_password']:
+    if args_array['current_root_password'] != args_array['root_password'] or args_array['current_non_root_password'] != args_array['non_root_password'] or args_array['current_non_root_username'] != args_array['non_root_username']:
         print "- Initializing the payload userdata"
         logger.info("- Initializing the payload userdata")
     # Log and Stdout the GitHub changes to be made
@@ -660,7 +722,31 @@ def initialize_payload(args_array):
                 # Call function to adjust file for migration
                 replacement_count += initialize_single_file(key, args_array, item)
 
+    # Store new config settings in .init_as
+    store_new_configuration_settings(args_array)
+
+    # Print message to stdout
     print "[ " + str(replacement_count) + " total replacements were found...]"
+
+# Store new config settings in file
+def store_new_configuration_settings(args_array):
+    # Write the new serverdata configuration of payload into .init_as
+    with open(args_array['payload_init_filename'], "w") as init_as:
+        print "[Storing new configuration settings...]"
+        init_as.write("IP " + args_array['site_IP'] + "\n")
+        init_as.write("DomainName " + args_array['site_URI'] + "\n")
+        init_as.write("EmailAddress " + args_array['admin_email'] + "\n")
+        init_as.write("NonRootUsername " + args_array['non_root_username'] + "\n")
+        init_as.write("RootPassword " + args_array['root_password'] + "\n")
+        init_as.write("NonRootPassword " + args_array['non_root_password'] + "\n")
+        init_as.write("MySQLRootPassword " + args_array['mysql_root_password'] + "\n")
+        init_as.write("MySQLBackupPassword " + args_array['mysql_backup_password'] + "\n")
+        init_as.write("GitHubUser " + args_array['github_username'] + "\n")
+        init_as.write("GitHubRepo " + args_array['github_reponame'] + "\n")
+        print "[Finished storing new configuration settings...]"
+    # Write the new serverdata configuration of payload into .init_as
+    with open(args_array['payload_remote_serverdata_filename'], "w") as remote_serverdata:
+        remote_serverdata.write(args_array['remote_backup_IP'])
 
 # Recieves a filename and looks for infile and changes to outfile
 def initialize_single_file(key, args_array, filename):
@@ -747,38 +833,6 @@ def initialize_single_file(key, args_array, filename):
     # Return the replacement count to be tracked
     return replacement_count
 
-# Prepares the arguments array for loading a payload or migrating a payload
-def prepare_args_array(args_array):
-
-    # Collect the serverdata from config file
-    server_data = get_server_data_from_file(args_array['cwd'])
-    # Update the relevant entries in args_array
-    # URI of the web-application to be deployed on the VPS
-    args_array.update({"site_URI" : server_data['site_URI']})
-    # IP of the server to host the site
-    args_array.update({"site_IP" : server_data['IP']})
-    # Admin email of the server to host the site
-    args_array.update({"admin_email" : server_data['admin_email']})
-    # Remote backup server IP
-    args_array.update({"remote_backup_IP" : server_data['remote_backup_IP']})
-    # Update the version of PHP to be installed
-    args_array.update({"PHP_version" : server_data['PHP_version']})
-    # Update the name of the sites_enabled file for Apache based on site_URI
-    args_array["payload_filename_array"]["v_host_site_file"]["destination_path"] = "/etc/sites_enabled/" + server_data['site_URI'] + ".conf"
-
-
-    # Github data is only available if payload is closed
-    if is_payload_open(args_array):
-        github_data = get_github_data_from_file(payload_dirpath)
-        # Default location of the local WordPress site files
-        default_local_site_dirpath = cwd + "/var/www/html/" + github_data['github_reponame'] + "/",
-        # GitHub username and repo name
-        args_array.update({"github_username" : github_data['github_username']})
-        args_array.update({"github_reponame" : github_data['github_reponame']})
-
-    # Return the updated args array
-    return args_array
-
 # Used to check if the payload is loaded or open
 def is_payload_open(args_array):
 
@@ -799,7 +853,6 @@ def build_command_arguments(args, args_array):
     try:
         # Create an array to store modified command line arguemnts
         command_args = {}
-
         # Pop off the first element of array because it's the application filename
         args.pop(0)
 
@@ -816,7 +869,7 @@ def build_command_arguments(args, args_array):
             else: return False
 
         # If not opendev or closedev there needs to be 3 or 4 arguments
-        elif len(args) <=7:
+        elif len(args) <= 7:
             if "-p" in args:
                 # Calculate position of -p argument
                 password_flag_position = args.index("-p")
@@ -923,13 +976,9 @@ def print_command_help_output():
     argument_output += "-purge : deploy the payload and remove payload files\n"
     argument_output += "-update : update the GitHub repository (must be done locally on server)\n"
     argument_output += "-backup : backup the GitHub repository and move the databse backups to backup server\n"
-    argument_output += "-migrate : migrate the WordPress site for another URL\n"
     argument_output += "-opendev : open the permissions on the web-root for editing\n"
     argument_output += "-closedev : close the permissions on the web-root for editing\n"
     argument_output += "-p <password> : password required to decrypt the data payload\n"
-    argument_output += "-if <current url> : the current url to be migrate from (default is yoursite.com)\n"
-    argument_output += "-of <destination url> : the new url the WordPress site will be hosted on\n"
-    argument_output += "-wp <wordpress dirpath> : the dirpath of local WordPress site\n"
     print argument_output
 
 # Setup logging
@@ -1227,15 +1276,3 @@ if __name__ == '__main__':
             print "[Closing payload...]"
             # Close the payload
             load_payload(args_array)
-
-        # If the command migrate then run script to modify the database files
-        elif args_array['command_args']['command'] == "migrate":
-            # Open the payload again
-            if is_payload_open(args_array) == False:
-                print "[Opening payload...]"
-                # Open the payload
-                open_payload(args_array)
-
-            # Call the function to migrate the site urls
-            migrate_site_url(args_array)
-            migrate_site_github_repo(args_array)

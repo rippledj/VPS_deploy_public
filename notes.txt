@@ -13,6 +13,8 @@
 -add an auto generation of passwords for root, user, and mysql users.
 -remove migration from the script (only for WordPress version)
 
+- move the writing of new server values to AFTER the values have been replaced
+
 # Look at the script TODO lists
 
 # Errors during script... using rmp???
