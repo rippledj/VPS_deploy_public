@@ -1,2 +1,2 @@
-root <change_root_password>
-<default_non_root_username> <change_non_root_password>
+root <default_root_password>
+<default_non_root_username> <default_non_root_password>

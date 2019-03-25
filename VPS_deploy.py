@@ -33,17 +33,14 @@ ____   ______________  _________      .___                   .__
   \     /   |    |    /        \  / /_/ |  \  ___/  |  |_> > |  |__ (  <_> )  \___  |
    \___/    |____|   /_______  /  \____ |   \___  > |   __/  |____/  \____/   / ____|
                              \/        \/       \/  |__|                      \/
- __          __                     _   _____
- \\ \        / /                    | | |  __ \\
-  \\ \\  /\\  / /    ___    _ __    __| | | |__) |  _ __    ___   ___   ___
-   \\ \\/  \\/ /    / _ \\  | '__|  / _` | |  ___/  | '__|  / _ \\ / __| / __|
-    \\  /\\  /    | (_) | | |    | (_| | | |      | |    |  __/ \\__ \\ \\__ \\
-     \\/  \\/      \\___/  |_|     \\__,_| |_|      |_|     \\___| |___/ |___/
-                                                                         """
+"""
 
 
 # Get the site URI from the user configured serverdata file
 def get_server_data_from_file(cwd):
+
+    # Print message to stdout
+    print ("[Collecting your server configuration data...]")
 
     # Create an array to hold the serverdata
     server_data = {}
@@ -56,7 +53,7 @@ def get_server_data_from_file(cwd):
             # Collect the IP from config file
             if line.split()[0] == "IP":
                 server_data.update({'IP' : line.split()[1].strip()})
-                print "Server IP: " + server_data['IP']
+                print ("Server IP: " + server_data['IP'])
             # Collect the domain name from config file
             if line.split()[0] == "DomainName":
                 server_data.update({'site_URI' : line.split()[1].strip()})
@@ -66,7 +63,7 @@ def get_server_data_from_file(cwd):
                 server_data.update({'admin_email' : line.split()[1].strip()})
                 print "Admin email: " + server_data['admin_email']
             # Collect the root password from config file
-            if line.split()[0] == "RootPassWord":
+            if line.split()[0] == "RootPassword":
                 server_data.update({'root_password' : line.split()[1].strip()})
                 print "Root password: " + server_data['root_password']
             # Collect the non root password from config file
@@ -80,28 +77,28 @@ def get_server_data_from_file(cwd):
             # Collect the non remote backup IP from config file
             if line.split()[0] == "RemoteBackupIP":
                 server_data.update({'remote_backup_IP' : line.split()[1].strip()})
-                print "Remote server IP " + server_data['remote_backup_IP']
+                print "Remote server IP: " + server_data['remote_backup_IP']
             # Collect the MySQL root password from config file
             if line.split()[0] == "MySQLRootPassword":
                 server_data.update({'mysql_root_password' : line.split()[1].strip()})
-                print "MySQL root password " + server_data['mysql_root_password']
+                print "MySQL root password: " + server_data['mysql_root_password']
             # Collect the MySQL backup password from config file
             if line.split()[0] == "MySQLBackupPassword":
                 server_data.update({'mysql_backup_password' : line.split()[1].strip()})
-                print "MySQL root password " + server_data['mysql_backup_password']
+                print "MySQL backup password: " + server_data['mysql_backup_password']
             # Collect the PHP Version from config file
             if line.split()[0] == "PHPVersion":
                 server_data.update({'PHP_version' : line.split()[1].strip()})
-                print "PHP version " + server_data['PHP_version']
+                print "PHP version: " + server_data['PHP_version']
             # Collect the DB Application from config file
             if line.split()[0] == "DBApplication":
-                server_data.update({'DB_app' : line.split()[1].strip()})
-                print "Database Application " + server_data['DB_app']
+                server_data.update({'DB_application' : line.split()[1].strip()})
+                print "Database application: " + server_data['DB_appplication']
             # Collect the Additional applications from config file
             if line.split()[0] == "AdditionalApplication":
                 server_data['additional_app_array'] = []
                 server_data.append('additional_app_array', line.split()[1].strip())
-                print "Additional Application " + server_data['DB_app']
+                print "Additional application added: " + line.split()[1].strip()
     # Check to see the serverdata has been modified
     if "IP" not in server_data or "site_URI" not in server_data or "admin_email" not in server_data:
         print "[You did not add your server config to the serverdata file...]"
@@ -112,12 +109,15 @@ def get_server_data_from_file(cwd):
         server_data.update({'remote_backup_IP' : False})
 
     # Print message to stdout
-    print "[Server data has been parsed to get the site URI...]"
+    print "[Server data has been parsed to get the configuration...]"
     # Return the dictionary with serverdata
     return server_data
 
 # Get the github data from serverdata file
 def get_github_data_from_file():
+
+    # Print message to stdout
+    print ("[Collecting your GitHub configuration data...]")
 
     # Create an array to hold the serverdata
     github_data = {}
@@ -135,10 +135,10 @@ def get_github_data_from_file():
                 print "GitHub repository name: " + github_data['github_reponame']
 
     if "github_username" not in github_data or "github_reponame" not in github_data:
-        print "[You did add your GitHub info to the serverdata file...]"
+        print ("[You did add your GitHub info to the serverdata file...]")
         exit()
     # Print message to stdout
-    print "[Server data has been parsed to get the GitHub data...]"
+    print ("[GitHub data has been parsed to get the configuration...]")
     # Return the dictionary with serverdata
     return github_data
 
@@ -147,6 +147,7 @@ def prepare_args_array(args_array):
 
     # Collect the serverdata from config file
     server_data = get_server_data_from_file(args_array['cwd'])
+
     # Update the relevant entries in args_array
     # URI of the web-application to be deployed on the VPS
     args_array.update({"site_URI" : server_data['site_URI']})
@@ -160,10 +161,21 @@ def prepare_args_array(args_array):
     args_array.update({"non_root_password" : server_data['non_root_password']})
     # Non root username to be set on the server
     args_array.update({"non_root_username" : server_data['non_root_username']})
+    # MySQL root password to be set on the server
+    args_array.update({"mysql_root_password" : server_data['mysql_root_password']})
+    # MySQL backup password to be set on the server
+    args_array.update({"mysql_backup_password" : server_data['mysql_backup_password']})
     # Remote backup server IP
     args_array.update({"remote_backup_IP" : server_data['remote_backup_IP']})
+
+    # Update the optional serverdata settings
     # Update the version of PHP to be installed
-    args_array.update({"PHP_version" : server_data['PHP_version']})
+    if "PHP_version" in server_data: args_array.update({"PHP_version" : server_data['PHP_version']})
+    # Update the version of PHP to be installed
+    if "DB_application" in server_data: args_array.update({"DB_application" : server_data['DB_application']})
+    # Update the additional applications array
+    if "additional_app_array" in server_data: args_array.update({"additional_app_array" : server_data['additional_app_array']})
+
     # Update the name of the sites_enabled file for Apache based on site_URI
     args_array["payload_filename_array"]["v_host_site_file"]["destination_path"] = "/etc/sites_enabled/" + server_data['site_URI'] + ".conf"
 
@@ -178,19 +190,6 @@ def prepare_args_array(args_array):
     # Return the updated args array
     return args_array
 
-# Collect any critical information required from the payload files
-def collect_payload_critical_information(args_array):
-
-    ## Include logger in the main function
-    logger = logging.getLogger(args_array['app_name'])
-
-    # Open the userdata file and read into array
-    userdata_file = open("payloads/userdata", "r")
-    userdata_contents_array = userdata_file.readlines()
-    for line in userdata_contents_array:
-        line = line.split().strip()
-        if line[0] != "root":
-            return line[0]
 
 # Loads the payload and returns args_array
 def load_payload(args_array):
@@ -212,16 +211,13 @@ def store_critical_information(args_array):
     ## Include logger in the main function
     logger = logging.getLogger(args_array['app_name'])
 
-    # Get the non-root username to add to the critical information file
-    non_root_username = collect_payload_critical_information(args_array)
-
     # Create a string to hold all the critical data
     critical_information_string = ""
 
     # Append to critical information string
     critical_information_string += "\n\nIMPORTANT: The payload will be erased after is is deployed so save the following information in a safe place."
     critical_information_string += "\n\nVPS_deploy payload password: " + args_array['command_args']['raw_password']
-    critical_information_string += "\nSSH command: ssh " + non_root_username + '@' + args_array['site_IP']
+    critical_information_string += "\nSSH command: ssh " + args_array['non_root_username'] + '@' + args_array['site_IP']
     critical_information_string += "\n\nOption A:"
     critical_information_string += "\n1. Copy (scp) payload.zip and VP_deplpy.py to your server"
     critical_information_string += "\n2. SSH into your VPS"
@@ -258,9 +254,10 @@ def store_critical_information(args_array):
     	exc_type, exc_obj, exc_tb = sys.exc_info()
     	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     	# Print the error
-    	print 'Failed to add critical payload files: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno)
+    	print ('Failed to add critical payload files: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
     	# Log error with creating filepath
     	logger.error('Failed add critical payload files: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
+        print ("[There are one or more critical files missing from the payload.  See documentation for details about required payload files...]")
         exit()
 
     # Check if user wants critical information written to file
@@ -611,7 +608,7 @@ def initialize_payload(args_array):
 
     # If the site has not been initialized yet
     if len(init_as_contents) == 0 or init_as_contents[0].strip() == "":
-        print "[Deafult configuration detected...]"
+        print "[Default configuration detected...]"
         # Set the site config details to be replaced as the default
         args_array['current_site_IP'] = args_array['default_site_IP']
         args_array['current_site_URI'] = args_array['default_site_URI']
@@ -636,8 +633,12 @@ def initialize_payload(args_array):
                 args_array['current_site_IP'] = item.split()[1].strip()
             if item.split()[0] == "DomainName":
                 args_array['current_site_URI'] = item.split()[1].strip()
+            # Set the admin email address
             if item.split()[0] == "EmailAddress":
                 args_array['current_admin_email'] = item.split()[1].strip()
+            # Set the remote backup IP
+            if item.split()[0] == "RemoteBackupIP":
+                args_array['remote_backup_IP'] = item.split()[1].strip()
             # Set the current userdata to be replaced as the default
             if item.split()[0] == "NonRootUsername":
                 args_array['current_non_root_username'] = item.split()[1].strip()
@@ -736,6 +737,7 @@ def store_new_configuration_settings(args_array):
         init_as.write("IP " + args_array['site_IP'] + "\n")
         init_as.write("DomainName " + args_array['site_URI'] + "\n")
         init_as.write("EmailAddress " + args_array['admin_email'] + "\n")
+        init_as.write("RemoteBackupIP " + args_array['remote_backup_IP'] + "\n")
         init_as.write("NonRootUsername " + args_array['non_root_username'] + "\n")
         init_as.write("RootPassword " + args_array['root_password'] + "\n")
         init_as.write("NonRootPassword " + args_array['non_root_password'] + "\n")
@@ -1022,9 +1024,9 @@ if __name__ == '__main__':
         # Default non-root username in the vanilla version of the package
         "default_non_root_username" : "<default_non_root_username>",
         # Default root password in the vanilla version of the package
-        "default_root_password" : "<change_root_password>",
+        "default_root_password" : "<default_root_password>",
         # Default non-root user password in the vanilla version of the package
-        "default_non_root_password" : "<change_non_root_password>",
+        "default_non_root_password" : "<default_non_root_password>",
         # Default MySQL root password in the vanilla version of the package
         "default_mysql_root_password" : "<default_mysql_root_password>",
         # Default MySQL backup password in the vanilla version of the package
@@ -1061,7 +1063,6 @@ if __name__ == '__main__':
             "serverdata" : [
                 cwd + "/payloads/httpd.conf",
                 cwd + "/payloads/V_host.conf",
-                cwd + "/payloads/remote_serverdata",
                 cwd + "/payloads/VPS_deploy.sh",
                 cwd + "/payloads/VPS_remote_backup.sh",
                 cwd + "/payloads/userdata"
