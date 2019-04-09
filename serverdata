@@ -13,6 +13,7 @@
 #IP 123.456.78.9
 #DomainName yoursite.com
 #EmailAddress your@emailaddress.com
+#RemoteBackupUsername remote_backup_username
 #RemoteBackupIP 123.456.78.9
 #GitHubUser github_username
 #GitHubRepo github_reponame
