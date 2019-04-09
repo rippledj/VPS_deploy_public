@@ -103,9 +103,10 @@ def get_server_data_from_file(cwd):
                 server_data['additional_app_array'] = []
                 server_data.append('additional_app_array', line.split()[1].strip())
                 print ("Additional application added: " + line.split()[1].strip())
-    # Check to see the serverdata has been modified
-    if "IP" not in server_data or "site_URI" not in server_data or "admin_email" not in server_data:
-        print ("[You did not add your server config to the serverdata file...]")
+
+    # Check to see the serverdata has all the required fields
+    if "IP" not in server_data or "site_URI" not in server_data or "admin_email" or "root_password" or "non_root_password" or "non_root_username" or "mysql_root_password" or "mysql_backup_password" not in server_data:
+        print "[You did not add the required VPS server config to the serverdata file...]"
         exit()
 
     # Set a false flag if there is no remote server IP
@@ -173,9 +174,9 @@ def prepare_args_array(args_array):
 
     # Update the optional serverdata settings
     # Remote backup server username
-    if "RemoteBackupUsername" in server_data: args_array.update({"remote_backup_username" : server_data['remote_backup_username']})
+    if "remote_backup_username" in server_data: args_array.update({"remote_backup_username" : server_data['remote_backup_username']})
     # Remote backup server IP
-    if "RemoteBackupIP" in server_data: args_array.update({"remote_backup_IP" : server_data['remote_backup_IP']})
+    if "remote_backup_IP" in server_data: args_array.update({"remote_backup_IP" : server_data['remote_backup_IP']})
     # Update the version of PHP to be installed
     if "PHP_version" in server_data: args_array.update({"PHP_version" : server_data['PHP_version']})
     # Update the version of PHP to be installed
@@ -679,13 +680,6 @@ def initialize_payload(args_array):
     if args_array['current_admin_email'] != args_array['admin_email']:
         print ("- Initializing the payload admin email from " + args_array['current_admin_email'] + " to " + args_array['admin_email'])
         logger.info("- Initializing the payload admin email from " + args_array['current_admin_email'] + " to " + args_array['admin_email'])
-    # Log and stdout the remote backup server data changes to be made
-    if args_array['current_remote_backup_username'] != args_array['remote_backup_username']:
-        print "- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username']
-        logger.info("- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username'])
-    if args_array['current_remote_backup_IP'] != args_array['remote_backup_IP']:
-        print "- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP']
-        logger.info("- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP'])
     # Log and Stdout the userdata changes to be made
     if args_array['current_root_password'] != args_array['root_password'] or args_array['current_non_root_password'] != args_array['non_root_password'] or args_array['current_non_root_username'] != args_array['non_root_username']:
         print ("- Initializing the payload userdata")
@@ -694,6 +688,16 @@ def initialize_payload(args_array):
     if args_array['current_github_username'] != args_array['github_username'] or args_array['current_github_reponame'] != args_array['github_reponame']:
         print ("- Initializing the payload GitHub repo from " + args_array['current_github_username'] + ":" + args_array['current_github_reponame'] + " to " + args_array['github_username'] + ":" + args_array['github_reponame'])
         logger.info("- Initializing the payload GitHub repo from " + args_array['current_github_username'] + ":" + args_array['current_github_reponame'] + " to " + args_array['github_username'] + ":" + args_array['github_reponame'])
+
+    # Log and stdout the remote backup server data changes to be made
+    if args_array['remote_backup_IP'] != False:
+        if args_array['current_remote_backup_username'] != args_array['remote_backup_username']:
+            print "- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username']
+            logger.info("- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username'])
+        if args_array['current_remote_backup_IP'] != args_array['remote_backup_IP']:
+            print "- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP']
+            logger.info("- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP'])
+
 
     # Set a variable to count the number of replacements found
     replacement_count = 0
@@ -830,7 +834,7 @@ def initialize_single_file(key, args_array, filename):
                         print ("[Found remote server IP to be replaced...]")
                         line = line.replace(args_array['current_remote_backup_IP'], args_array['remote_backup_IP'])
                         replacement_count += 1
-                        
+
             # Check if the line is a blank line
             if len(line.strip("\n")) == 0:
                 outfile.write("\n")
@@ -976,8 +980,11 @@ def build_command_arguments(args, args_array):
 def print_command_help_output():
     argument_output = "Notice : You need to run this script as root.\n"
     argument_output += "Notice : -opendev & -closedev do not require -p <password>.  All other commands do.\n"
-    argument_output += "Deploy usage : VPS_deploy.py [-load | -open | -deploy | -remotedeploy | -purge | -update] [-p <password>] | -backup <password>| -migrate -if <current url> -of <destination url>\n"
-    argument_output += "Open/close the web-root for non-root read/write permissions: VPS_deploy [-opendev | -closedev]\n"
+    argument_output += "\n"
+    argument_output += "Deploy usage : VPS_deploy.py [-load | -open | -deploy | -remotedeploy | -purge | -update] [-p <password>] | -backup <password>\n"
+    argument_output += "\n"
+    argument_output += "To open/close the web-root for non-root read/write permissions: VPS_deploy [-opendev | -closedev]\n"
+    argument_output += "\n"
     argument_output += "-h, -help : print help menu\n"
     argument_output += "-load : encrypt and compress the payload to be deployed\n"
     argument_output += "-open : open the payload for editing\n"
