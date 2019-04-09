@@ -808,6 +808,21 @@ def initialize_single_file(key, args_array, filename):
                         print ("[Found IP regex to be replaced...]")
                         line = line.replace(args_array['current_httpd_redirect_IP'], args_array['new_httpd_redirect_IP'])
                         replacement_count += 1
+                    # Replace any modified instances of the non root password
+                    if args_array['current_non_root_password'] in line:
+                        print "[Found non root password to be replaced...]"
+                        line = line.replace(args_array['current_non_root_password'], args_array['non_root_password'])
+                        replacement_count += 1
+                    # Replace any modified instances of the non root username
+                    if args_array['current_non_root_username'] in line:
+                        print "[Found non root username to be replaced...]"
+                        line = line.replace(args_array['current_non_root_username'], args_array['non_root_username'])
+                        replacement_count += 1
+                    # Replace any instances of the current/default http mod rewrite regex
+                    if args_array['current_httpd_redirect_IP'] in line:
+                        print "[Found IP regex to be replaced...]"
+                        line = line.replace(args_array['current_httpd_redirect_IP'], args_array['new_httpd_redirect_IP'])
+                        replacement_count += 1
                 if key == "github_data":
                     # Replace any modified instances of the current/default GitHub userdata
                     if args_array['current_github_username'] in line:
@@ -820,8 +835,6 @@ def initialize_single_file(key, args_array, filename):
                         line = line.replace(args_array['current_github_reponame'], args_array['github_reponame'])
                         replacement_count += 1
                 if key == "remote_serverdata":
-                    print ("Replacing remote serverdata in: " + filename + "\n")
-                    print ("Line: " + line + "\n")
                     print ("Looking for IP: " + args_array['current_remote_backup_username'] + "\n")
                     print ("Looking for username: " + args_array['current_remote_backup_IP'] + "\n")
                     # Replace any modified instances of the current/default remote backup username
@@ -871,19 +884,12 @@ def build_command_arguments(args, args_array):
         args.pop(0)
 
         # First check if opendev, closedev arg issued
-        if len(args) == 1:
-            if "-opendev" in args:
+        if "-closedev" in args or "-opendev" in args:
                 # Return the command args array
                 command_args['command'] = args[0].replace('-', '')
                 return command_args
-            elif "-closedev" in args:
-                # Return the command args array
-                command_args['command'] = args[0].replace('-', '')
-                return command_args
-            else: return False
-
-        # If not opendev or closedev there needs to be 3 or 4 arguments
-        elif len(args) <= 7:
+        # If not then process arguments as normal
+        else:
             if "-p" in args:
                 # Calculate position of -p argument
                 password_flag_position = args.index("-p")
@@ -901,8 +907,14 @@ def build_command_arguments(args, args_array):
                 command_args.update({"key" : key})
             # If there is no password argument, then the command line is failed
             elif "-p" not in args:
-                print ("password please...")
-                return False
+                # Request the user to put the password into command line
+                password_input = raw_input("Password please... >")
+                # encrypt the raw_password into the form used for encryption
+                key = hashlib.sha256(password_input).digest()
+                # Append the raw password onto the command line argument array
+                command_args.update({"raw_password" : password_input})
+                # Append the key back onto the end of the command line arguement array
+                command_args.update({"key" : key})
 
             # Look for infile in command args
             if "-if" in args:
@@ -941,13 +953,13 @@ def build_command_arguments(args, args_array):
                         item = item.replace('-', '')
                         command_args.update({"command" : item})
                 else:
-                    print ("Command line args failed...")
+                    print "Command line args failed..."
                     return False
 
             # Check that purge is not set with illegal flags
             if command_args['purge']:
                 if command_args['command'] in args_array['not_with_purge']:
-                    print ("Purge can only work with -deploy or -remotedeploy...")
+                    print "Purge can only work with -deploy or -remotedeploy..."
                     return False
 
             # Check for outfile url if -migrate flag is set
@@ -956,25 +968,22 @@ def build_command_arguments(args, args_array):
                 if "infile" not in command_args:
                     command_args.update({"infile" : False})
                 if "outfile" not in command_args:
-                    print ("Outfile must be be specified using -of when migrating the site...")
+                    print "Outfile must be be specified using -of when migrating the site..."
                     return False
 
             # Return the command args array
             return command_args
-
-        # There are an incorrect number of arguments
-        else:
-            return False
 
     except Exception as e:
         # Collect the exception information
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         # Print the error
-        print ('Failed to build command arguments: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
+        print 'Failed to build command arguments: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno)
         # Log error with creating filepath
         logger.error('Failed to build command arguments: ' + str(e) + str(exc_type) + str(fname) + str(exc_tb.tb_lineno))
         return False
+
 
 # Build the output for command line instructions
 def print_command_help_output():
@@ -1022,7 +1031,7 @@ if __name__ == '__main__':
         # VPS Deploy flags
         "app_name" : "VPS Deploy",
         "sandbox_mode" : True,
-        "log_filename" : cwd + "log",
+        "log_filename" : cwd + "/log",
         "cwd" : cwd + "/",
         # Default site URL in the vanilla version of the package
         "default_site_URI" : "<yoursite.com>",
