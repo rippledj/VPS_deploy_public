@@ -25,6 +25,8 @@
 #
 # Optional Settings
 #
+# Set folders to be compressed and backed up (absolute path required)
+#BackupFolder wp-content/uploads
 #The PHP version to be installed (5.5, 5.6, 7.1, 7.2)
 #PHPVersion 5.6
 #The datbase application to install (mariadb, mysql, postgres)
