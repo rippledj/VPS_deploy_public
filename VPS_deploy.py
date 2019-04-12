@@ -202,14 +202,19 @@ def prepare_args_array(args_array):
 # Loads the payload and returns args_array
 def load_payload(args_array):
 
-    # Remove any default settings from the payload
-    initialize_payload(args_array)
-    # Store the critical information from the payload
-    args_array = store_critical_information(args_array)
+    # To check if the payload is on server or not
+    # Check if server data file exists and if not then
+    # do not initialize the payload
+    if os.path.isfile(args_array['cwd'] + 'serverdata'):
+        # Remove any default settings from the payload
+        initialize_payload(args_array)
+        # Store the critical information from the payload
+        args_array = store_critical_information(args_array)
+        # Output the critical information from the payload
+        output_critical_information(args_array)
+
     # Create the payload
     create_payload(args_array)
-    # Output the critical information from the payload
-    output_critical_information(args_array)
     # Return args_array
     return args_array
 

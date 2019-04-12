@@ -25,6 +25,9 @@
 #
 # Optional Settings
 #
+# If you want an uploads directory that is not included in your GitHub repository
+# moved onto the server and placed into the web-root directory specify the local path
+#UploadsDirLocalPath /path/to/local/wordpress/wp-content/uploads
 # Set folders to be compressed and backed up (absolute path required)
 #BackupFolder wp-content/uploads
 #The PHP version to be installed (5.5, 5.6, 7.1, 7.2)
