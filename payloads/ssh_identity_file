@@ -4,4 +4,4 @@ Host 192.30.253.112
 
 Host <default_remote_backup_IP>
   Port 22
-  IdentityFile ~/.ssh/id_rsa_backup
+  IdentityFile ~/.ssh/id_rsa_remote

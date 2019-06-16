@@ -2,8 +2,8 @@
 #
 #
 # VPS_close.sh
-# Closes the payload
-# Ripple Software Consulting
+# Close the Payload
+#
 # GitHub: https://github.com/rippledj/VPS_deploy
 # Author: Joseph Lee
 # Email: joseph@ripplesoftware.ca

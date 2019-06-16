@@ -2,9 +2,9 @@
 #
 #
 # VPS_open.sh
-# Opens the payload
-# Ripple Software Consulting
-# GitHub: https://github.com/rippledj/VPS_deploy
+# Open the Payload
+#
+# GitHub: https://github.com/rippledj/VPS_deploy_wordpress
 # Author: Joseph Lee
 # Email: joseph@ripplesoftware.ca
 #

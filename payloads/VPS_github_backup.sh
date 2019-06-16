@@ -3,23 +3,27 @@
 #
 # VPS_remote_backup.sh
 # Remote Backup Script
-# Ripple Software Consulting
+#
 # GitHub: https://github.com/rippledj/VPS_deploy
 # Author: Joseph Lee
 # Email: joseph@ripplesoftware.ca
 #
-# Move the payload and main script to the server, and run remotely
-echo "[Pushing changes to GitHub repository...]"
+# Prepare SSH to load keys
+#
+echo "[Creating SSH directory...]"
+mkdir /root/.ssh
+# Add the ssh identity file to root to configure connection to GitHub
+echo "[Adding identify files to root...]"
+/bin/cp payloads/ssh_identity_file /root/.ssh/
+mv /root/.ssh/ssh_identity_file /root/.ssh/config
+chmod 0400 /root/.ssh/config
+#
+# Perform GitHub backup actions
+#
+echo "[Starting to process GitHub repository update...]"
 if [ -s payloads/id_rsa_github ]
 then
     echo "[Starting to process GitHub repository update...]"
-    # Make a ssh directory and set permissions
-    mkdir /root/.ssh
-    # Add the ssh identity file to root to configure connection to github
-    echo "[Adding identify files to root...]"
-    /bin/cp payloads/ssh_identity_file /root/.ssh/
-    mv /root/.ssh/ssh_identity_file /root/.ssh/config
-    chmod 0400 /root/.ssh/config
     echo "[Adding GitHub as known host to root...]"
     # Add github.com to the known_hosts file
     ssh-keyscan -H github.com >> /root/.ssh/known_hosts
@@ -30,7 +34,7 @@ then
     # Modify permissions
     chmod 0400 /root/.ssh/id_rsa_github
     chmod 0400 /root/.ssh/id_rsa_github.pub
-    # Copy the id_rsa_github and id_rsa_github.pub to /root/.ssh directory
+    # Copy the id_rsa_github to ssh-agent
     echo "[Adding GitHub SSH keys to root ssh agent...]"
     eval `ssh-agent -s`
     ssh-add /root/.ssh/id_rsa_github
@@ -39,14 +43,22 @@ then
     do
       # Eliminate comments
       if [[ ${githubuser[0]:0:1} != "#" && ! -z "${githubuser[0]}" ]]; then
-        # Clone the repo for the site to be installed
-        echo "[Adding changes to GitHub repository...]"
+        #
+        # Push the live site to the GitHub repository 'live' branch
+        #
         cd /var/www/html/${githubuser[0]}
+        # Push the current site to the live branch
+        git fetch . master:live
+        # Switch to the live branch
+        git checkout live
+        # Add the changes to the live branch
         git add -A
         echo "[Commiting changes to GitHub repository...]"
         git commit -m "Auto commit from server on \$(date +\%m_\%d_\%Y)"
         echo "[Pushing commits to GitHub repository...]"
-        git push origin master
+        git push origin live
+        # Switch back to the master branch
+        git checkout master
         # Remove the ssh-agent deamon
         eval `ssh-agent -k`
         echo "[ssh-agent process killed...]"

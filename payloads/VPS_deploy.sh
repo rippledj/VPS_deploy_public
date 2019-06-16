@@ -2,24 +2,30 @@
 #
 #
 # VPS_deploy.sh
-# Main deploy script
-# Ripple Software Consulting
+# Main Server Deployment Script
+#
 # GitHub: https://github.com/rippledj/VPS_deploy
 # Author: Joseph Lee
 # Email: joseph@ripplesoftware.ca
 #
+# Install epel repository
+#
+echo "[Adding epel repository...]"
+yum install -y epel-release
+echo "[Added epel repository...]"
 #
 # Set the timezone and configure time
 #
 # Install the NTP date
+echo "[Configuring server time...]"
 yum install -y ntp
 yum install -y ntpdate
 # Check that ntpd is running
 chkconfig ntpd on
 # Set ntpd as a service
+systemctl enable ntpd
 # Sync the time to pool.ntp.org
 ntpdate pool.ntp.org
-systemctl enable ntpd
 # Start the ntpd daemon
 systemctl start ntpd
 # Set the hardware clock to server clock
@@ -28,6 +34,7 @@ hwclock -w
 timedatectl set-ntp yes
 # Set the local time zone
 timedatectl set-local-rtc 0
+echo "[Server time configured...]"
 #
 # Enable persistant log journaling
 #
@@ -37,13 +44,16 @@ systemctl restart systemd-journald
 #
 # Creat Swap space and enable
 #
-fallocate -l 1G /swapfile
+echo "[Creating swap space...]"
+sudo dd if=/dev/zero of=/swapfile count=2096 bs=1MiB
 chmod 600 /swapfile
 mkswap /swapfile
 swapon /swapfile
 echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
 swapon --show
+swapon --summary
 free -h
+echo "[Swap space created...]"
 #
 # Install Firewalld
 #
@@ -59,10 +69,30 @@ echo "[firwalld installed, enabled, and added to systemctl services...]"
 echo "[Installing fail2ban...]"
 yum install -y fail2ban
 /bin/cp payloads/jail.local /etc/fail2ban/jail.local
+/bin/cp payloads/ban.conf /etc/fail2ban/ban.conf
+/bin/cp payloads/multiban.conf /etc/fail2ban/filter.d/multiban.conf
+/bin/cp payloads/httpd-get-dos.conf /etc/fail2ban/filter.d/httpd-get-dos.conf
+/bin/cp payloads/httpd-post-dos.conf /etc/fail2ban/filter.d/httpd-post-dos.conf
 systemctl restart fail2ban
 systemctl enable fail2ban
 fail2ban-client status
 echo "[fail2ban installed, enabled, and added to systemctl services...]"
+#
+# Install Clamscan
+#
+echo "[Installing ClamAV...]"
+#yum install -y clamav clamav-update clamav-scanner-systemd clamav-server-systemd
+yum -y install clamav-server clamav-data clamav-update clamav-filesystem clamav clamav-scanner-systemd clamav-devel clamav-lib clamav-server-systemd
+sed -i -e "s/^Example/#Example/" /etc/freshclam.conf
+sed -i -e "s/^Example/#Example/" /etc/clamd.d/scan.conf
+# Configure SELinux to allow virus scanning
+setsebool -P antivirus_can_scan_system 1
+setsebool -P clamd_use_jit 1
+echo "[ClamAV installed enabled and added to systemctl services...]"
+echo "[Updating ClamAV signatures...]"
+freshclam
+clamd -V
+echo "[ClamAV Installed...]"
 #
 # User Account Creation
 #
@@ -109,6 +139,7 @@ do
     #echo "[SSH access now only available to non-root user ${user[0]}...]"
   fi
 done < payloads/userdata
+# TODO: Check that Grub is install on server and config if needed
 #
 # Update CentOS and Repositories
 #
@@ -116,10 +147,6 @@ done < payloads/userdata
 #echo "[Updating and upgrading OS...]"
 #yum -y update && upgrade
 #echo "[OS updated and upgraded...]"
-# Install epel repository
-echo "[Adding epel repository...]"
-yum install -y epel-release
-echo "[Added epel repository...]"
 #
 # Install LAMP Web-stack
 #
@@ -127,27 +154,73 @@ echo "[Added epel repository...]"
 echo "[Installing Apache...]"
 yum install -y httpd
 echo "[Apache installed...]"
-# Install PHP
-# Step 1: Install Webstatic repositories
-echo "[Installing PHP...]"
 #
 # Install PHP 7.1 and necessary extensions
 #
-rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-yum install -y mod_php71w php71w-cli php71w-common php71w-gd php71w-mbstring php71w-mcrypt php71w-mysqlnd php71w-xml
+echo "[Installing PHP...]"
+if [ -s payloads/php_version ]
+then
+  while read -r -a phpversion
+  do
+    if [ ${phpversion} = "7.2" ]; then
+      rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+      yum install -y mod_php71w php71w-cli php71w-common php71w-gd php71w-mbstring php71w-mcrypt php71w-mysqlnd php71w-xml
+    elif [ ${phpversion} = "7.1" ]; then
+      rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+      yum install -y mod_php71w php71w-cli php71w-common php71w-gd php71w-mbstring php71w-mcrypt php71w-mysqlnd php71w-xml
+    elif [ ${phpversion} = "5.6" ]; then
+      rpm -Uvh http://vault.centos.org/7.0.1406/extras/x86_64/Packages/epel-release-7-5.noarch.rpm
+      yum install -y http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+      yum --enablerepo=remi,remi-php56 -y install php php-common
+      yum --enablerepo=remi,remi-php56 -y install php-cli php-pdo php-mysql php-mysqlnd php-gd php-mcrypt php-xml php-simplexml php-zip
+    elif [ ${phpversion} = "5.5" ]; then
+      rpm -Uvh http://vault.centos.org/7.0.1406/extras/x86_64/Packages/epel-release-7-5.noarch.rpm
+      yum install -y http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+      yum --enablerepo=remi,remi-php55 -y install php php-common
+      yum --enablerepo=remi,remi-php55 -y install php-cli php-pdo php-mysql php-mysqlnd php-gd php-mcrypt php-xml php-simplexml php-zip
+    fi
+  done < payloads/php_version
+fi
 echo "[PHP installed...]"
-# Install MySQL / MariaDB
-echo "[Installing MySQL/MariaDB...]"
-yum install -y mariadb-server
-# Replace MySQL/MariaDB my.conf file with payload/my.cnf
-echo "[Replacing MySQL/MariaDB configuration file...]"
-/bin/cp payloads/my.cnf /etc/my.cnf
-# Start MySQL/MariaDB and add to boot services
-echo "[Starting MySQL/MariaDB...]"
-systemctl start mariadb
-systemctl enable mariadb
-systemctl status mariadb
-echo "[MySQL/MariaDB installed, started and added to system services...]"
+#
+# Install Database Application
+#
+echo "[Installing Database Application...]"
+if [ -s payloads/db_version ]
+then
+  while read -r -a dbversion
+  do
+    if [ ${dbversion} = "mariadb" ]; then
+      # Install MariaDB from default repository
+      echo "[Installing MariaDB...]"
+      yum install -y mariadb-server
+      # Replace MySQL/MariaDB my.conf file with payload/my.cnf
+      echo "[Replacing MariaDB configuration file...]"
+      /bin/cp payloads/my.cnf /etc/my.cnf
+      # Start MySQL/MariaDB and add to boot services
+      echo "[Starting MariaDB...]"
+      systemctl start mariadb
+      systemctl enable mariadb
+      systemctl status mariadb
+      echo "[MariaDB installed, started and added to system services...]"
+    elif [ ${dbversion} = "mysql" ]; then
+      # Install MySQL from default repository
+      echo "[Installing MySQL...]"
+      wget -N https://dev.mysql.com/get/mysql-community-server-8.0.12-1.el7.x86_64.rpm
+      rpm -ivh mysql-community-server-8.0.12-1.el7.x86_64.rpm
+      yum update
+      yum localinstall -y mysql-community-release-el7-5.noarch.rpm
+      systemctl start mysqld
+      systemctl enable mysqld
+      echo "[MySQL installed from rpm and started...]"
+      # Perform tasks performed by mysql_secure_installation
+      # If there is anything in the mysql_userdata file then add mysql root password and backup user
+    elif [ ${dbversion} = "postgres" ]; then
+
+    fi
+  done < payloads/db_version
+fi
+echo "[Database Application installed...]"
 #
 # Modify Configuration of LAMP Web-stack
 #
@@ -255,10 +328,25 @@ then
         # Clone the repo for the site to be installed
         echo "[Cloning repository into web-root directory...]"
         git clone git@github.com:${githubuser[1]}/${githubuser[0]}.git /var/www/html/${githubuser[0]}
+        # Create a `live` branch in the repo
+        (cd /var/www/html/${githubuser[0]} && git branch live)
         # Remove the ssh-agent deamon
         eval `ssh-agent -k`
         echo "[ssh-agent process killed...]"
         echo "[GitHub repo successfully cloned...]"
+        # Check for and move WordPress uploads directory
+        echo "[Checking for WordPress uploads directory to move...]"
+        if [ -e uploads.tar.gz ]
+        then
+          echo "[Moving uploads directory to WordPress installation...]"
+          rm -rf /var/www/html/${githubuser[0]}/wp-content/uploads
+          mv uploads.tar.gz /var/www/html/${githubuser[0]}/wp-content
+          echo "[Upacking WordPress uploads directory...]"
+          gunzip /var/www/html/${githubuser[0]}/wp-content/uploads.tar.gz
+          echo "[WordPress uploads directory moved and unpacked...]"
+        else
+          echo "[No WordPress uploads directory found...]"
+        fi
         # Set permissions files for host domain
         echo "[Re-writing ownership...]"
         chown -R apache:apache /var/www/html/${githubuser[0]}
@@ -397,6 +485,7 @@ echo "[Starting Apache...]"
 service httpd start
 # Set Apache to start on server boot
 echo "[Addding Apache to system services...]"
+systemctl enable httpd
 systemctl enable httpd.service
 echo "[Apache started and added to system services...]"
 #
@@ -411,8 +500,8 @@ echo "[rkhunter added and updated...]"
 # Run rkhunter to get initial image of system settings
 echo "[Creating rkhuner stored file properties (rkhunter.dat)...]"
 rkhunter --propupd
+echo "[rkhunter stored files properties file created...]"
 # TODO: rkhunter -c -sk is not completing scan... thinks
-#echo "[rkhunter stored files properties file created...]"
 #rkhunter -c --sk
 #echo "[rkhunter has completed first scan of system...]"
 # Continue to install non critical softare
@@ -422,12 +511,12 @@ echo "[logrotate Installed...]"
 echo "[Installing nano...]"
 yum install -y nano
 echo "[nano Installed...]"
+echo "[Installing additional packages...]"
+yum install -y yum-plugin-protectbase.noarch
 echo "[Installing required python packages...]"
 yum install -y python-dateutil
 yum install -y MySQL-python
 yum install -y mysql-devel
-pip install psycopg2
-pip install psycopg2-binary
 echo "[Finished installing required python packages...]"
 #
 # Install Crontab Schedule Jobs
@@ -436,25 +525,41 @@ echo "[Finished installing required python packages...]"
 echo "[Intializing crontab and adding crontabs from payload...]"
 crontab payloads/crons
 # Install cron for rkhunter
-echo "[Adding rkhunter to crontabs...]"
-crontab -l | { cat; echo "0 0 * * 0 rkhunter -c --sk"; } | crontab -
+#echo "[Adding rkhunter to crontabs...]"
+#crontab -l | { cat; echo "0 0 * * 0 rkhunter -c --sk"; } | crontab -
+# TODO: what does rpm -V initscripts >> /var/log/initscripts.log do???
+echo "[Adding rpm initscripts crontabs...]"
 crontab -l | { cat; echo "0 0 * * 0 rpm -V initscripts >> /var/log/initscripts.log"; } | crontab -
-# Install database backup crons
-echo "[Adding MySQL backup to crontabs...]"
-if [ -s payloads/mysql_userdata ]; then
-  while read -r -a mysqlpass
-  do
-    if [ ${mysqlpass[0]} = "backup" ]; then
-      mkdir -p /var/www/<github_reponame>/backups/database
-      chmod o+w /var/www/<github_reponame>/backups/database
-      crontab -l | { cat; echo "10 0 * * 0 mysqldump --single-transaction -u backup -p${mysqlpass[1]} --all-databases | gzip > /var/www/<github_reponame>/backups/database/db_backup_\$(date +\%m_\%d_\%Y).sql.gz"; } | crontab -
-    fi
-  done < payloads/mysql_userdata
-fi
+# Install a cron to check that MySQL is running at all times
+echo "[Adding MySQL status checking and restart to crontabs...]"
+crontab -l | { cat; echo "* * * * * service mariadb status || service mariadb start"; } | crontab -
+# Install GitHub push and scp database backup to remote server
+echo "[Adding GitHub and remote database backup to crontabs...]"
+crontab -l | { cat; echo "1 0 * * * python ./root/VPS_deploy.py -githubbackup -p $1"; } | crontab -
+crontab -l | { cat; echo "1 0 * * 1 python ./root/VPS_deploy.py -databasebackup -p $1"; } | crontab -
+echo "[Adding a full scan of the WordPress Installation to crontabs...]"
+crontab -l | { cat; echo "0 3 * * 2 clamscan -r -i /var/www/html/${githubuser[1]} -l /var/log/clamscan.log"; } | crontab -
+echo "[Update the ClamScan virus signatures ...]"
+crontab -l | { cat; echo "0 2 * * 2 freshclam"; } | crontab -
 echo "[Finished adding crontabs to schedule...]"
+#
+# Prepare location for database backups
+#
+echo "[Adding MySQL backup location...]"
+# Get the GitHub reponame to define the local database backup folder
+while read -r -a githubuser
+do
+  # Eliminate comments
+  if [[ ${githubuser[0]:0:1} != "#" && ! -z "${githubuser[0]}" ]]; then
+    # Create the database backup destination folder and make mysqld permissions
+    mkdir -p /var/www/backups/${githubuser[1]}
+    chmod o+w /var/www/backups/${githubuser[1]}
+  fi
+done < payloads/github_userdata
 #
 # SSHD Conifiguration
 #
+# TODO: figure out the best config for sshd_config that works
 # Move the sshd config file onto the server
 echo "[Moving new sshd_config to server...]"
 /bin/cp payloads/sshd_config /etc/ssh/sshd_config
@@ -469,6 +574,9 @@ echo "[Root SSH directory removed...]"
 # Install required SSL packages
 echo "[Installing required packages for SSL...]"
 yum install -y mod_ssl python-certbot-apache
+# Install mod_evasive DDOS prevention
+echo "[Installing additional Apache security packages...]"
+yum install -y mod_evasive  mod_security
 # Restart Apache
 echo "[Restarting Apache...]"
 systemctl restart httpd
@@ -476,19 +584,13 @@ systemctl restart httpd
 systemctl status httpd
 # Move the payload and main script to the server, and run remotely
 # TODO: use tool to autocomplete the requried input such as email address, etc. "2" into the certbot command
-echo "[Registering a SSL certificate with Let's Encrypt...]"
-while read -r -a sshdata
-do
-  # Eliminate all comment lines
-  if [[ ${sshdata[0]:0:1} != "#" && ! -z "${sshdata[0]}" ]]; then
-    if [ ${sshdata[0]} = "DomainName" ]; then
-      certbot --non-interactive --agree-tos --redirect --hsts --uir -m joseph@ripplesoftware.ca --apache -d ${sshdata[1]} -d www.${sshdata[1]}
-    fi
-  fi
-done < serverdata
 echo "[SSL certificate registered...]"
 /bin/cp payloads/ssl.conf /etc/httpd/conf.d/ssl.conf
-echo "[Moved SSL configuration file to Apache...]"
+/bin/cp payloads/mod_evasive.conf /etc/httpd/conf.d/mod_evasive.conf
+/bin/cp payloads/mod_security.conf /etc/httpd/conf.d/mod_security.conf
+echo "[Moved configuration files to Apache...]"
+echo "[Registering a SSL certificate with Let's Encrypt...]"
+certbot --non-interactive --agree-tos --redirect --hsts --uir -m <your@emailaddress.com> --apache -d <default_site_URI> -d www.<default_site_URI>
 echo "[Adding a crontab schedule to renew SSL certificates...]"
 crontab -l | { cat; echo "30 2 * * * /usr/bin/certbot renew >> /var/log/le-renew.log"; } | crontab -
 echo "[Scheduled a autorenew of SSL certificates...]"
@@ -536,10 +638,6 @@ if [ $2 = 1 ]; then
   rm -rf payloads
   echo "[VPS_deploy payload has been removed...]"
 fi
-# Close the payload
-echo "[Closing the payload...]"
-python VPS_deploy.py -load -p $5
-echo "[Payload closed...]"
 # Clear the command line history
 echo "[Removing command line history...]"
 history -c
@@ -551,12 +649,26 @@ do
   # Eliminate all comment lines
   if [[ ${finish[0]:0:1} != "#" && ! -z "${finish[0]}" ]]; then
     if [ ${finish[0]} = "poweroff" ] && [ ${finish[1]} = "1" ]; then
-      echo "[Powering off VPS server... image me!...]"
-      poweroff
+      poweroff = 1
     fi
     if [ ${finish[0]} = "reboot" ] && [ ${finish[1]} = "1" ]; then
-      echo "[Rebooting VPS server... see you soon!...]"
-      reboot
+      reboot = 1
+    fi
+    if [ ${finish[0]} = "close" ] && [ ${finish[1]} = "1" ]; then
+      # Close the payload
+      close = 1
     fi
   fi
 done < payloads/finish
+# Use the variables to determine finish operations
+if $poweroff = 1; then
+  echo "[Powering off VPS server... image me!...]"
+  poweroff
+elif $reboot = 1; then
+  echo "[Rebooting VPS server... see you soon!...]"
+  reboot
+elif $close = 1; then
+  echo "[Closing the payload...]"
+  python ./VPS_deploy.py -close -p $1
+  echo "[Payload closed...]"
+fi
