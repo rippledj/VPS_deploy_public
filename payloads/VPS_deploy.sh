@@ -71,8 +71,8 @@ yum install -y fail2ban
 /bin/cp payloads/jail.local /etc/fail2ban/jail.local
 /bin/cp payloads/ban.conf /etc/fail2ban/ban.conf
 /bin/cp payloads/multiban.conf /etc/fail2ban/filter.d/multiban.conf
-/bin/cp payloads/httpd-get-dos.conf /etc/fail2ban/filter.d/httpd-get-dos.conf
-/bin/cp payloads/httpd-post-dos.conf /etc/fail2ban/filter.d/httpd-post-dos.conf
+/bin/cp payloads/http-get-dos.conf /etc/fail2ban/filter.d/http-get-dos.conf
+/bin/cp payloads/http-post-dos.conf /etc/fail2ban/filter.d/http-post-dos.conf
 systemctl restart fail2ban
 systemctl enable fail2ban
 fail2ban-client status
@@ -162,9 +162,16 @@ if [ -s payloads/php_version ]
 then
   while read -r -a phpversion
   do
-    if [ ${phpversion} = "7.2" ]; then
-      rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-      yum install -y mod_php71w php71w-cli php71w-common php71w-gd php71w-mbstring php71w-mcrypt php71w-mysqlnd php71w-xml
+    if [ ${phpversion} = "7.3" ]; then
+      yum install -y http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+      yum install -y yum-utils
+      yum-config-manager --enable remi-php73
+      yum install php
+    elif [ ${phpversion} = "7.2" ]; then
+      yum install -y http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+      yum install -y yum-utils
+      yum-config-manager --enable remi-php72
+      yum install php
     elif [ ${phpversion} = "7.1" ]; then
       rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
       yum install -y mod_php71w php71w-cli php71w-common php71w-gd php71w-mbstring php71w-mcrypt php71w-mysqlnd php71w-xml
@@ -206,16 +213,19 @@ then
     elif [ ${dbversion} = "mysql" ]; then
       # Install MySQL from default repository
       echo "[Installing MySQL...]"
+      yum install -y wget
       wget -N https://dev.mysql.com/get/mysql-community-server-8.0.12-1.el7.x86_64.rpm
       rpm -ivh mysql-community-server-8.0.12-1.el7.x86_64.rpm
-      yum update
-      yum localinstall -y mysql-community-release-el7-5.noarch.rpm
+      yum install -y mysql-server
       systemctl start mysqld
       systemctl enable mysqld
       echo "[MySQL installed from rpm and started...]"
       # Perform tasks performed by mysql_secure_installation
       # If there is anything in the mysql_userdata file then add mysql root password and backup user
     elif [ ${dbversion} = "postgres" ]; then
+      yum install postgresql-server postgresql-contrib
+      sudo systemctl start postgresql
+      sudo systemctl enable postgresql
 
     fi
   done < payloads/db_version
@@ -532,7 +542,7 @@ echo "[Adding rpm initscripts crontabs...]"
 crontab -l | { cat; echo "0 0 * * 0 rpm -V initscripts >> /var/log/initscripts.log"; } | crontab -
 # Install a cron to check that MySQL is running at all times
 echo "[Adding MySQL status checking and restart to crontabs...]"
-crontab -l | { cat; echo "* * * * * service mariadb status || service mariadb start"; } | crontab -
+crontab -l | { cat; echo "* * * * * systemctl is-active --quiet mariadb || systemctl restart mariadb"; } | crontab -
 # Install GitHub push and scp database backup to remote server
 echo "[Adding GitHub and remote database backup to crontabs...]"
 crontab -l | { cat; echo "1 0 * * * python ./root/VPS_deploy.py -githubbackup -p $1"; } | crontab -
@@ -542,6 +552,9 @@ crontab -l | { cat; echo "0 3 * * 2 clamscan -r -i /var/www/html/${githubuser[1]
 echo "[Update the ClamScan virus signatures ...]"
 crontab -l | { cat; echo "0 2 * * 2 freshclam"; } | crontab -
 echo "[Finished adding crontabs to schedule...]"
+echo "[Setting journalctl vacuume time ...]"
+crontab -l | { cat; echo "1 0 1 * * journalctl --vacuum-time=30d"; } | crontab -
+echo "[Finished setting journalctl vacuume time ...]"
 #
 # Prepare location for database backups
 #
@@ -622,6 +635,16 @@ echo "[Apache restarted...]"
 echo "[Closing Apache config using Apache config locker...]"
 python payloads/apache_config_locker.py -close -p $1
 echo "[Apache config closed...]"
+#
+#TODO Harden the httpd file permissions
+#
+#
+#TODO Harden the mysql file permissions
+#
+#
+#TODO Harden the other OS file permissions
+#
+#
 #
 # VPS_deploy Cleanup
 #
