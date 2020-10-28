@@ -90,6 +90,7 @@ def get_server_data_from_file(cwd):
             if line.split()[0] == "MySQLBackupPassword":
                 server_data.update({'mysql_backup_password' : line.split()[1].strip()})
                 print ("MySQL backup password: " + server_data['mysql_backup_password'])
+<<<<<<< HEAD
             # Collect the MySQL install script from config file
             if line.split()[0] == "MySQLScript":
                 if "mysql_scripts" not in server_data:
@@ -114,6 +115,16 @@ def get_server_data_from_file(cwd):
                 else:
                     print ("[Database version specified in serverdata is not valid...]")
                     exit()
+=======
+            # Collect the PHP Version from config file
+            if line.split()[0] == "PHPVersion":
+                server_data.update({'PHP_version' : line.split()[1].strip()})
+                print ("PHP version: " + server_data['PHP_version'])
+            # Collect the DB Application from config file
+            if line.split()[0] == "DBApplication":
+                server_data.update({'DB_application' : line.split()[1].strip()})
+                print ("Database application: " + server_data['DB_appplication'])
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
             # Collect the Additional applications from config file
             if line.split()[0] == "AdditionalApplication":
                 server_data['additional_app_array'] = []
@@ -122,7 +133,11 @@ def get_server_data_from_file(cwd):
 
     # Check to see the serverdata has all the required fields
     if "IP" not in server_data or "site_URI" not in server_data or "admin_email" not in server_data or "root_password" not in server_data or "non_root_password" not in server_data or "non_root_username" not in server_data or "mysql_root_password" not in server_data or "mysql_backup_password" not in server_data:
+<<<<<<< HEAD
         print ("[You did not add the required VPS server config to the serverdata file...]")
+=======
+        print "[You did not add the required VPS server config to the serverdata file...]"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
         exit()
 
     # Set a false flag if there is no remote server IP
@@ -205,10 +220,13 @@ def prepare_args_array(args_array):
     args_array.update({"mysql_backup_password" : server_data['mysql_backup_password']})
 
     # Update the optional serverdata settings
+<<<<<<< HEAD
     # MySQL scripts to be run during installation
     if "mysql_scripts" in server_data: args_array.update({"mysql_scripts" : server_data['mysql_scripts']})
     # WordPress uploads directory to move
     if "uploads_dirpath" in server_data: args_array.update({"uploads_dirpath" : server_data['uploads_dirpath']})
+=======
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
     # Remote backup server username
     if "remote_backup_username" in server_data: args_array.update({"remote_backup_username" : server_data['remote_backup_username']})
     # Remote backup server IP
@@ -249,6 +267,7 @@ def load_payload(args_array):
         # Output the critical information from the payload
         output_critical_information(args_array)
 
+<<<<<<< HEAD
     # Create the payload
     create_payload(args_array)
 
@@ -261,6 +280,10 @@ def close_payload(args_array):
     # Create the payload
     create_payload(args_array)
 
+=======
+    # Create the payload
+    create_payload(args_array)
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
     # Return args_array
     return args_array
 
@@ -505,6 +528,7 @@ def validate_password(args_array):
     # Include logger in the mainn function
     logger = logging.getLogger(args_array['app_name'])
 
+<<<<<<< HEAD
     # Check that the password file is present in payload
     with zipfile.ZipFile(args_array['compressed_payload_filename'] + ".zip", 'r') as z:
         if args_array["password_check_filename"] in z.namelist():
@@ -528,6 +552,10 @@ def validate_password(args_array):
         else:
             print "[Supplied password is incorrect...]"
             exit()
+=======
+    print ("[Opening payload...]")
+    logger.info("[Opening payload...]")
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
 # Get script out of payload
 def open_payload(args_array):
@@ -570,6 +598,21 @@ def open_payload(args_array):
                 # Decrypt the file from encrypted format
                 payload_content = perform_decryption(args_array['command_args']['key'], payload_content)
 
+<<<<<<< HEAD
+=======
+            # Decrypt the file from encrypted format
+    		IV = 16 * '\x00'
+            mode = AES.MODE_CBC
+            decryptor = AES.new(args_array['command_args']['key'], mode, IV=IV)
+            payload_content = decryptor.decrypt(payload_content)
+
+            # Check that the first line for confirmation of password
+            # If the password confirmation is not correct, then return false
+            if payload_content[0] != "*":
+                print ("your password is incorrect...")
+                return False
+            else:
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                 # Make an array to put passphrasess into
                 payload_content_array = payload_content.splitlines()
                 payload_content_cleaned = []
@@ -593,8 +636,13 @@ def open_payload(args_array):
             for ex_file in args_array['executable_files_array']:
                 os.chmod(ex_file, 0700)
 
+<<<<<<< HEAD
             print ("[Payload opened...]")
             logger.info("[Payload opened...]")
+=======
+        print ("[Payload opened...]")
+        logger.info("[Payload opened...]")
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
     except Exception as e:
         print (traceback)
@@ -668,8 +716,13 @@ def create_payload(args_array):
                 # Write the encrypted data to file
                 payload_out_filename.write(file_data_in_ciphertext)
 
+<<<<<<< HEAD
             print ("- Payload file: " + plaintext_file + " encrypted...")
             logger.warning("- Payload is missing a required file: " + item_filename)
+=======
+            print "- Payload file: " + plaintext_file + " encrypted..."
+            logger.warning("- Payload file: " + plaintext_file + " encrypted...")
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
         # Zip the payload directory
         shutil.make_archive(args_array['compressed_payload_filename'], 'zip', args_array['payload_dirpath'])
@@ -776,7 +829,10 @@ def initialize_payload(args_array):
             args_array['httpd_redirect_IP'] = "^" + new_IP_sub_array[0] + "\\." + new_IP_sub_array[1] + "\\." + new_IP_sub_array[2] + "\\." + new_IP_sub_array[3] + "$"
             print (args_array['current_httpd_redirect_IP'] + " - " + args_array['httpd_redirect_IP'])
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
     # Log and Stdout the server data changes to be made
     if args_array['current_site_IP'] != args_array['site_IP']:
         print ("- Initializing the payload IP from " + args_array['current_site_IP'] + " to " + args_array['site_IP'])
@@ -799,6 +855,7 @@ def initialize_payload(args_array):
     # Log and stdout the remote backup server data changes to be made
     if args_array['remote_backup_IP'] != False:
         if args_array['current_remote_backup_username'] != args_array['remote_backup_username']:
+<<<<<<< HEAD
             print ("- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username'])
             logger.info("- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username'])
         if args_array['current_remote_backup_IP'] != args_array['remote_backup_IP']:
@@ -815,6 +872,14 @@ def initialize_payload(args_array):
         # Open the file and replace the existing values
         with open(args_array['db_version_filename'], "w") as db_version_file:
             db_version_file.write(args_array['db_application'])
+=======
+            print "- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username']
+            logger.info("- Initializing the payload remote server username from " + args_array['current_remote_backup_username'] + " to " + args_array['remote_backup_username'])
+        if args_array['current_remote_backup_IP'] != args_array['remote_backup_IP']:
+            print "- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP']
+            logger.info("- Initializing the payload remote server IP from " + args_array['current_remote_backup_IP'] + " to " + args_array['remote_backup_IP'])
+
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
     # Set a variable to count the number of replacements found
     replacement_count = 0
@@ -822,6 +887,17 @@ def initialize_payload(args_array):
     # Rewrite the payload files with the new site IP and URL
     for key, values in args_array['initialize_files_array'].iteritems():
         print ("- Modifying " + key + " type files")
+<<<<<<< HEAD
+=======
+
+        # If initializing the serverdata_file then create a replacement for the http redirect from the raw IP
+        if key == "serverdata":
+            current_IP_sub_array = args_array['current_site_IP'].replace("<","").replace(">","").split(".")
+            new_IP_sub_array = args_array['site_IP'].split(".")
+            args_array['current_httpd_redirect_IP'] = "^" + current_IP_sub_array[0] + "\\." + current_IP_sub_array[1] + "\\." + current_IP_sub_array[2] + "\\." + current_IP_sub_array[3] + "$"
+            args_array['new_httpd_redirect_IP'] = "^" + new_IP_sub_array[0] + "\\." + new_IP_sub_array[1] + "\\." + new_IP_sub_array[2] + "\\." + new_IP_sub_array[3] + "$"
+            print (args_array['current_httpd_redirect_IP'] + " - " + args_array['new_httpd_redirect_IP'])
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
         for item in values:
             # For any directories in the list
@@ -864,6 +940,7 @@ def store_new_configuration_settings(args_array):
         init_as.write("MySQLBackupPassword " + args_array['mysql_backup_password'] + "\n")
         init_as.write("GitHubUser " + args_array['github_username'] + "\n")
         init_as.write("GitHubRepo " + args_array['github_reponame'] + "\n")
+<<<<<<< HEAD
         if args_array['uploads_dirpath'] != False:
             init_as.write("UploadsDirLocalPath " + args_array['uploads_dirpath'] + "\n")
 
@@ -911,6 +988,9 @@ def update_mysql_scripts(args_array):
             mysql_scripts.write(line)
 
     print ("[Finished updating mysql_scripts with config settings...]")
+=======
+        print ("[Finished storing new configuration settings...]")
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
 # Recieves a filename and looks for infile and changes to outfile
 def initialize_single_file(key, args_array, filename):
@@ -941,7 +1021,7 @@ def initialize_single_file(key, args_array, filename):
             line = line.strip("\n")
             initialized_file_contents_array.append(line)
 
-    # Rewrite the file arrray into the new file
+    # Rewrite the file array into the new file with replacements
     with open(filename, "w") as outfile:
         for line in initialized_file_contents_array:
             # Do not change comment lines
@@ -966,22 +1046,44 @@ def initialize_single_file(key, args_array, filename):
                     # Replace any instances of the current/default http mod rewrite regex
                     if args_array['current_httpd_redirect_IP'] in line:
                         print ("[Found IP regex to be replaced...]")
+<<<<<<< HEAD
                         line = line.replace(args_array['current_httpd_redirect_IP'], args_array['httpd_redirect_IP'])
                         replacement_count += 1
                     # Replace any modified instances of the root password
                     if args_array['current_root_password'] in line:
                         print ("[Found root password to be replaced...]")
+=======
+                        line = line.replace(args_array['current_httpd_redirect_IP'], args_array['new_httpd_redirect_IP'])
+                        replacement_count += 1
+                    # Replace any modified instances of the root password
+                    if args_array['current_root_password'] in line:
+                        print "[Found root password to be replaced...]"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                         line = line.replace(args_array['current_root_password'], args_array['root_password'])
                         replacement_count += 1
                     # Replace any modified instances of the non root password
                     if args_array['current_non_root_password'] in line:
+<<<<<<< HEAD
                         print ("[Found non root password to be replaced...]")
+=======
+                        print "[Found non root password to be replaced...]"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                         line = line.replace(args_array['current_non_root_password'], args_array['non_root_password'])
                         replacement_count += 1
                     # Replace any modified instances of the non root username
                     if args_array['current_non_root_username'] in line:
+<<<<<<< HEAD
                         print ("[Found non root username to be replaced...]")
                         line = line.replace(args_array['current_non_root_username'], args_array['non_root_username'])
+=======
+                        print "[Found non root username to be replaced...]"
+                        line = line.replace(args_array['current_non_root_username'], args_array['non_root_username'])
+                        replacement_count += 1
+                    # Replace any instances of the current/default http mod rewrite regex
+                    if args_array['current_httpd_redirect_IP'] in line:
+                        print "[Found IP regex to be replaced...]"
+                        line = line.replace(args_array['current_httpd_redirect_IP'], args_array['new_httpd_redirect_IP'])
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                         replacement_count += 1
                 if key == "github_data":
                     # Replace any modified instances of the current/default GitHub userdata
@@ -997,12 +1099,20 @@ def initialize_single_file(key, args_array, filename):
                 if key == "mysql_data":
                     # Replace any modified instances of the current/default MySQL root password
                     if args_array['current_mysql_root_password'] in line:
+<<<<<<< HEAD
                         print ("[Found MySQL root password to be replaced...]")
+=======
+                        print "[Found MySQL root password to be replaced...]"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                         line = line.replace(args_array['current_mysql_root_password'], args_array['mysql_root_password'])
                         replacement_count += 1
                     # Replace any modified instances of the current/default MySQL backup user password
                     if args_array['current_mysql_backup_password'] in line:
+<<<<<<< HEAD
                         print ("[Found MySQL backup password to be replaced...]")
+=======
+                        print "[Found MySQL backup password to be replaced...]"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                         line = line.replace(args_array['current_mysql_backup_password'], args_array['mysql_backup_password'])
                         replacement_count += 1
                 if key == "remote_serverdata":
@@ -1053,6 +1163,7 @@ def build_command_arguments(args, args_array):
         # Pop off the first element of array because it's the application filename
         args.pop(0)
 
+<<<<<<< HEAD
         # First check if help command requested
         if "-h" in args:
             # Return the command args array
@@ -1061,6 +1172,10 @@ def build_command_arguments(args, args_array):
 
         # Second check if opendev, closedev arg issued
         elif "-closedev" in args or "-opendev" in args:
+=======
+        # First check if opendev, closedev arg issued
+        if "-closedev" in args or "-opendev" in args:
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
                 # Return the command args array
                 command_args['command'] = args[0].replace('-', '')
                 return command_args
@@ -1163,8 +1278,15 @@ def build_command_arguments(args, args_array):
 
 # Build the output for command line instructions
 def print_command_help_output():
+<<<<<<< HEAD
     argument_output = "\n"
     argument_output += "Deploy usage : VPS_deploy.py [-load | -open | -deploy | -remotedeploy | -purge | -update] [-p <password>] | -backup <password>| -migrate -if <current url> -of <destination url>\n"
+=======
+    argument_output = "Notice : You need to run this script as root.\n"
+    argument_output += "Notice : -opendev & -closedev do not require -p <password>.  All other commands do.\n"
+    argument_output += "\n"
+    argument_output += "Deploy usage : VPS_deploy.py [-load | -open | -deploy | -remotedeploy | -purge | -update] [-p <password>] | -backup <password>\n"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
     argument_output += "\n"
     argument_output += "To open/close the web-root for non-root read/write permissions: VPS_deploy [-opendev | -closedev]\n"
     argument_output += "\n"
@@ -1214,9 +1336,13 @@ if __name__ == '__main__':
         # Default site URL in the vanilla version of the package
         "default_site_URI" : "<default_site_URI>",
         # Default IP address in the vanilla version of the package
+<<<<<<< HEAD
         "default_site_IP" : "<default_site_IP>",
         # Default IP address in regex for httpd.conf
         "default_regex_site_IP" : "123.456.78.9",
+=======
+        "default_site_IP" : "<123.456.78.9>",
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
         # Default remote backup server username in the vanilla version of the package
         "default_remote_backup_username" : "<default_remote_backup_username>",
         # Default remote backup server IP address in the vanilla version of the package
@@ -1298,8 +1424,12 @@ if __name__ == '__main__':
             "remote_serverdata" : [
                 cwd + "/payloads/remote_serverdata",
                 cwd + "/payloads/ssh_identity_file",
+<<<<<<< HEAD
                 cwd + "/payloads/VPS_database_backup.sh",
                 cwd + "/payloads/VPS_github_backup.sh"
+=======
+                cwd + "/payloads/VPS_remote_backup.sh"
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
             ],
             # Files that have MySQL data to be replaced
             "mysql_data" : [
@@ -1379,7 +1509,11 @@ if __name__ == '__main__':
                 # Load the payload
                 args_array = load_payload(args_array)
             else:
+<<<<<<< HEAD
                 print ("[Payload already loaded for deployment...]")
+=======
+                print ("[Payload already loaded for deployment]")
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
         # If command issue to open payload
         elif args_array['command_args']['command'] == "open":
@@ -1423,9 +1557,15 @@ if __name__ == '__main__':
 
             # Close the payload
             if is_payload_open(args_array) == False:
+<<<<<<< HEAD
                 print ("[Closing Payload...]")
                 # Close the payload
                 args_array = close_payload(args_array)
+=======
+                print ("[Opening Payload...]")
+                # Load the payload
+                args_array = load_payload(args_array)
+>>>>>>> ec92d3667bff0d6b222e1c5de34c51bedd5bb3c4
 
         # If VPS_deploy is on the client and ready to be deployed
         elif args_array['command_args']['command'] == "remotedeploy":

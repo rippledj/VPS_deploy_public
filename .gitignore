@@ -18,3 +18,5 @@ payloads/log
 
 # Ignore the critical information file
 critical_information.txt
+
+notes.txt

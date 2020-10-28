@@ -37,9 +37,15 @@
 #
 #PHPVersion 7.1
 #
-# The datbase application to install (mariadb (default), mysql, postgres)
+# The database application to install (mariadb (default), mysql, postgres)
 #
 #DBApplication mariadb
+#
+# If you want an uploads directory that is not included in your GitHub repository
+# moved onto the server and placed into the web-root directory specify the local path
+#UploadsDirLocalPath /path/to/local/wordpress/wp-content/uploads
+# Set folders to be compressed and backed up (absolute path required)
+#BackupFolder wp-content/uploads
 #
 # Add as many additional applications as you want
 #

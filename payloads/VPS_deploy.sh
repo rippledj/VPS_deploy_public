@@ -345,13 +345,13 @@ then
         echo "[ssh-agent process killed...]"
         echo "[GitHub repo successfully cloned...]"
         # Check for and move WordPress uploads directory
-        echo "[Checking for WordPress uploads directory to move...]"
+        echo "[Checking for uploads directory to move...]"
         if [ -e uploads.tar.gz ]
         then
-          echo "[Moving uploads directory to WordPress installation...]"
+          echo "[Moving uploads directory to installation...]"
           rm -rf /var/www/html/${githubuser[0]}/wp-content/uploads
           mv uploads.tar.gz /var/www/html/${githubuser[0]}/wp-content
-          echo "[Upacking WordPress uploads directory...]"
+          echo "[Upacking uploads directory...]"
           gunzip /var/www/html/${githubuser[0]}/wp-content/uploads.tar.gz
           echo "[WordPress uploads directory moved and unpacked...]"
         else
@@ -553,22 +553,29 @@ echo "[Update the ClamScan virus signatures ...]"
 crontab -l | { cat; echo "0 2 * * 2 freshclam"; } | crontab -
 echo "[Finished adding crontabs to schedule...]"
 echo "[Setting journalctl vacuume time ...]"
-crontab -l | { cat; echo "1 0 1 * * journalctl --vacuum-time=30d"; } | crontab -
+crontab -l | { cat; echo "1 0 1 * * journalctl --vacuum-time=60d"; } | crontab -
 echo "[Finished setting journalctl vacuume time ...]"
 #
 # Prepare location for database backups
 #
 echo "[Adding MySQL backup location...]"
-# Get the GitHub reponame to define the local database backup folder
-while read -r -a githubuser
-do
-  # Eliminate comments
-  if [[ ${githubuser[0]:0:1} != "#" && ! -z "${githubuser[0]}" ]]; then
-    # Create the database backup destination folder and make mysqld permissions
-    mkdir -p /var/www/backups/${githubuser[1]}
-    chmod o+w /var/www/backups/${githubuser[1]}
-  fi
-done < payloads/github_userdata
+if [ -s payloads/mysql_userdata ]; then
+  while read -r -a mysqlpass
+  do
+    if [ ${mysqlpass[0]} = "backup" ]; then
+      # Get the GitHub reponame to define the local database backup folder
+      while read -r -a githubuser
+      do
+        # Eliminate comments
+        if [[ ${githubuser[0]:0:1} != "#" && ! -z "${githubuser[0]}" ]]; then
+          # Create the database backup destination folder and make mysqld permissions
+          mkdir -p /var/www/backups/${githubuser[1]}
+          chown mysqld:mysqld /var/www/backups/${githubuser[1]}
+        fi
+      done < payloads/github_userdata
+    fi
+  done < payloads/mysql_userdata
+fi
 #
 # SSHD Conifiguration
 #
